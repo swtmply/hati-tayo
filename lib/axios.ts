@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const serverURL = process.env.EXPO_PUBLIC_SERVER_URL;
+
 export default axios.create({
-  baseURL: "http://192.168.1.11:3000",
+  baseURL: serverURL,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
