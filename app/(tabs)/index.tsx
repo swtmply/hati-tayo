@@ -1,74 +1,154 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Text } from "~/components/ui/text";
+import useDBUser from "~/hooks/use-db-user";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { cssInterop } from "nativewind";
+import { FlatList, ImageBackground, RefreshControl, View } from "react-native";
+import Svg from "react-native-svg";
+import TransactionListItem from "~/components/transaction-list-item";
+import { CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Skeleton } from "~/components/ui/skeleton";
+import axios from "~/lib/axios";
+import { cn } from "~/lib/utils";
+import { Transaction } from "~/types";
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+cssInterop(Svg, {
+  className: {
+    target: "style",
+    nativeStyleToProp: {
+      fill: true,
+    },
   },
 });
+
+const HomePage = () => {
+  const { dbUser } = useDBUser();
+
+  const {
+    data: transactions,
+    isLoading,
+    refetch: refetchTransactions,
+    isRefetching: isRefetchingTransactions,
+  } = useQuery({
+    queryKey: ["transactions", dbUser?.id],
+    queryFn: async () => {
+      const response = await axios.get(`/api/transactions/${dbUser?.id}`);
+
+      return response.data as Transaction[];
+    },
+    enabled: !!dbUser,
+  });
+
+  const {
+    data: userTransactionSummary,
+    isLoading: userTransactionSummaryLoading,
+    refetch: refetchUserTransactionSummary,
+    isRefetching: isRefetchingUserTransactionSummary,
+  } = useQuery({
+    queryKey: ["transactions", dbUser?.id, "summary"],
+    queryFn: async () => {
+      const response = await axios.get(
+        `/api/transactions/${dbUser?.id}/summary`
+      );
+
+      return response.data as Transaction;
+    },
+    enabled: !!dbUser,
+  });
+
+  const isRefetching =
+    isRefetchingTransactions || isRefetchingUserTransactionSummary;
+
+  return (
+    <SafeAreaView className="p-4 flex-1 gap-4">
+      <Text className="text-2xl font-bold">Hello, {dbUser?.name}</Text>
+
+      <View className="h-1/3 bg-green-50 rounded-lg">
+        <ImageBackground
+          source={require("~/assets/images/patterns/pattern-5.png")}
+          className="flex-1"
+          resizeMode="repeat"
+        />
+        <CardHeader className="px-6 pt-6 pb-0">
+          {userTransactionSummaryLoading ? (
+            <Skeleton className="w-40 h-10" />
+          ) : (
+            userTransactionSummary && (
+              <CardTitle
+                className={cn(
+                  "text-4xl",
+                  userTransactionSummary.paid - userTransactionSummary.owed ===
+                    0
+                    ? "text-foreground"
+                    : userTransactionSummary.paid -
+                        userTransactionSummary.owed >
+                      0
+                    ? "text-primary"
+                    : "text-destructive"
+                )}
+              >
+                {Intl.NumberFormat("en-PH", {
+                  style: "currency",
+                  currency: "PHP",
+                }).format(
+                  Math.abs(
+                    userTransactionSummary.paid - userTransactionSummary.owed
+                  )
+                )}
+              </CardTitle>
+            )
+          )}
+        </CardHeader>
+        <CardContent className="flex-row gap-1">
+          <Text className="text-lg text-muted-foreground">
+            Remaining Balance
+          </Text>
+        </CardContent>
+      </View>
+
+      <Text className="font-bold text-lg">Unsettled Transactions:</Text>
+
+      {isLoading ? (
+        <View className="gap-2">
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+        </View>
+      ) : (
+        transactions && (
+          <FlatList
+            data={transactions}
+            keyExtractor={(item, index: number) =>
+              `${item.id}-${index.toString()}`
+            }
+            renderItem={({ item: transaction }) => (
+              <TransactionListItem transaction={transaction} />
+            )}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching}
+                onRefresh={() => {
+                  refetchTransactions();
+                  refetchUserTransactionSummary();
+                }}
+              />
+            }
+            ItemSeparatorComponent={() => <View className="h-2" />}
+            ListEmptyComponent={() => (
+              <View className="h-32 justify-center">
+                <Text className="text-center text-2xl font-bold">
+                  No unsettled transactions.
+                </Text>
+              </View>
+            )}
+          />
+        )
+      )}
+    </SafeAreaView>
+  );
+};
+
+export default HomePage;
