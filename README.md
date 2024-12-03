@@ -21,7 +21,7 @@ Hati-Tayo is a mobile application designed to simplify bill splitting among grou
 1. Clone the repository
 
 ```bash
-   git clone https://github.com/swtmply/hati-tayo-backend.git
+   git clone https://github.com/swtmply/hati-tayo.git
    cd hati tayo
 ```
 
