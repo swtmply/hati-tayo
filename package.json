@@ -25,6 +25,7 @@
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.0",
     "@rn-primitives/avatar": "^1.1.0",
+    "@rn-primitives/dialog": "^1.1.0",
     "@rn-primitives/label": "^1.1.0",
     "@rn-primitives/popover": "^1.1.0",
     "@rn-primitives/select": "^1.1.0",

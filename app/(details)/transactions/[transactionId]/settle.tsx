@@ -151,7 +151,11 @@ const SettleTransactionPage = () => {
         </Button>
         <Button
           onPress={() => mutate()}
-          disabled={isPending || transaction.paidBy.id === dbUser?.id}
+          disabled={
+            isPending ||
+            transaction.paidBy.id === dbUser?.id ||
+            transaction.owed === 0
+          }
           className="w-1/2"
         >
           <Text>Settle Transaction</Text>

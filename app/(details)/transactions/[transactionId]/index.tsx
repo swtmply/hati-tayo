@@ -1,19 +1,33 @@
-import { FlatList, RefreshControl, View } from "react-native";
+import { FlatList, RefreshControl, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import useDBUser from "~/hooks/use-db-user";
 import axios from "~/lib/axios";
-import { Transaction } from "~/types";
+import { Transaction, User } from "~/types";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { cn } from "~/lib/utils";
 
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+
 const TransactionPage = () => {
   const { dbUser } = useDBUser();
   const { transactionId } = useLocalSearchParams();
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
   const {
     data: transaction,
@@ -30,6 +44,25 @@ const TransactionPage = () => {
       return response.data as Transaction;
     },
     enabled: !!dbUser,
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async ({ userId }: { userId: string }) => {
+      return axios.post(`/api/transactions/${userId}/${transactionId}/settle`, {
+        paid: transaction?.owed,
+      });
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ["transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["hatian"],
+      });
+
+      router.back();
+    },
   });
 
   return (
@@ -62,28 +95,36 @@ const TransactionPage = () => {
               );
 
               return (
-                <View className="flex-row justify-between items-center">
-                  <View className="flex-row gap-2 items-center">
-                    <Avatar alt={user.name}>
-                      <AvatarImage source={{ uri: user.image }} />
-                    </Avatar>
-                    <Text className="text-lg font-bold">{user.name}</Text>
-                  </View>
-                  <Text
-                    className={cn(
-                      "text-2xl font-extrabold text-right",
-                      parseFloat(userExpense!.owed.toString()) === 0
-                        ? "text-foreground line-through"
-                        : "text-primary",
-                      userExpense!.settled && "line-through"
-                    )}
-                  >
-                    {Intl.NumberFormat("en-PH", {
-                      style: "currency",
-                      currency: "PHP",
-                    }).format(userExpense!.owed)}
-                  </Text>
-                </View>
+                <ConfirmDialog
+                  onCancel={() => {}}
+                  onConfirm={() => {
+                    mutate({ userId: user.id });
+                  }}
+                  user={user}
+                >
+                  <TouchableOpacity className="flex-row justify-between items-center">
+                    <View className="flex-row gap-2 items-center">
+                      <Avatar alt={user.name}>
+                        <AvatarImage source={{ uri: user.image }} />
+                      </Avatar>
+                      <Text className="text-lg font-bold">{user.name}</Text>
+                    </View>
+                    <Text
+                      className={cn(
+                        "text-2xl font-extrabold text-right",
+                        parseFloat(userExpense!.owed.toString()) === 0
+                          ? "text-foreground line-through"
+                          : "text-primary",
+                        userExpense!.settled && "line-through"
+                      )}
+                    >
+                      {Intl.NumberFormat("en-PH", {
+                        style: "currency",
+                        currency: "PHP",
+                      }).format(userExpense!.owed)}
+                    </Text>
+                  </TouchableOpacity>
+                </ConfirmDialog>
               );
             }}
             refreshControl={
@@ -101,6 +142,43 @@ const TransactionPage = () => {
         )
       )}
     </SafeAreaView>
+  );
+};
+
+const ConfirmDialog = ({
+  onConfirm,
+  onCancel,
+  children,
+  user,
+}: {
+  onConfirm: () => void;
+  onCancel: () => void;
+  children: React.ReactNode;
+  user: User;
+}) => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Settle Bill</DialogTitle>
+          <DialogDescription>
+            You are about settle the bill for {user.name}. Are you sure you want
+            to proceed?
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex-row justify-between">
+          <DialogClose asChild className="w-1/2">
+            <Button variant={"secondary"}>
+              <Text>Close</Text>
+            </Button>
+          </DialogClose>
+          <Button className="w-1/2" onPress={onConfirm}>
+            <Text>OK</Text>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
