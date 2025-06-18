@@ -12,6 +12,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "convex": "^1.23.0"
+    "convex": "^1.23.0",
+    "convex-helpers": "^0.1.94"
   }
 }
