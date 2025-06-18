@@ -1,19 +1,21 @@
-import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { Stack } from "expo-router";
+import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
+import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import {
 	DarkTheme,
 	DefaultTheme,
 	type Theme,
 	ThemeProvider,
 } from "@react-navigation/native";
+import { ConvexReactClient } from "convex/react";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import React, { useRef } from "react";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../global.css";
-import { NAV_THEME } from "@/lib/constants";
-import React, { useRef } from "react";
-import { useColorScheme } from "@/lib/use-color-scheme";
-import { Platform } from "react-native";
-import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 
 const LIGHT_THEME: Theme = {
 	...DefaultTheme,
@@ -54,20 +56,22 @@ export default function RootLayout() {
 		return null;
 	}
 	return (
-		<ConvexProvider client={convex}>
-			<ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-				<StatusBar style={isDarkColorScheme ? "light" : "dark"} />
-				<GestureHandlerRootView style={{ flex: 1 }}>
-					<Stack>
-						<Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-						<Stack.Screen
-							name="modal"
-							options={{ title: "Modal", presentation: "modal" }}
-						/>
-					</Stack>
-				</GestureHandlerRootView>
-			</ThemeProvider>
-		</ConvexProvider>
+		<ClerkProvider>
+			<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+				<ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+					<StatusBar style={isDarkColorScheme ? "light" : "dark"} />
+					<GestureHandlerRootView style={{ flex: 1 }}>
+						<Stack>
+							<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+							<Stack.Screen
+								name="modal"
+								options={{ title: "Modal", presentation: "modal" }}
+							/>
+						</Stack>
+					</GestureHandlerRootView>
+				</ThemeProvider>
+			</ConvexProviderWithClerk>
+		</ClerkProvider>
 	);
 }
 
