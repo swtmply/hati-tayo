@@ -17,6 +17,7 @@ import type * as auth from "../auth.js";
 import type * as groups from "../groups.js";
 import type * as transaction_shares from "../transaction_shares.js";
 import type * as transactions from "../transactions.js";
+import type * as types from "../types.js";
 import type * as users from "../users.js";
 
 /**
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   groups: typeof groups;
   transaction_shares: typeof transaction_shares;
   transactions: typeof transactions;
+  types: typeof types;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

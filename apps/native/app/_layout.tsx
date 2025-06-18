@@ -1,4 +1,5 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
+import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import {
 	DarkTheme,
 	DefaultTheme,
@@ -52,7 +53,7 @@ export default function RootLayout() {
 		return null;
 	}
 	return (
-		<ClerkProvider>
+		<ClerkProvider tokenCache={tokenCache}>
 			<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
 				<ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
 					<StatusBar style={isDarkColorScheme ? "light" : "dark"} />
@@ -65,10 +66,6 @@ export default function RootLayout() {
 						>
 							<Stack.Screen name="(tabs)" />
 							<Stack.Screen name="(auth)" />
-							<Stack.Screen
-								name="modal"
-								options={{ title: "Modal", presentation: "modal" }}
-							/>
 						</Stack>
 					</GestureHandlerRootView>
 				</ThemeProvider>
@@ -77,7 +74,7 @@ export default function RootLayout() {
 	);
 }
 
-const useIsomorphicLayoutEffect =
+export const useIsomorphicLayoutEffect =
 	Platform.OS === "web" && typeof window === "undefined"
 		? React.useEffect
 		: React.useLayoutEffect;
