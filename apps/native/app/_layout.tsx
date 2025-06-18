@@ -1,6 +1,3 @@
-import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import {
 	DarkTheme,
@@ -15,6 +12,9 @@ import { StatusBar } from "expo-status-bar";
 import React, { useRef } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
+import { NAV_THEME } from "~/lib/constants";
+import { useColorScheme } from "~/lib/use-color-scheme";
 import "../global.css";
 
 const LIGHT_THEME: Theme = {
@@ -24,10 +24,6 @@ const LIGHT_THEME: Theme = {
 const DARK_THEME: Theme = {
 	...DarkTheme,
 	colors: NAV_THEME.dark,
-};
-
-export const unstable_settings = {
-	initialRouteName: "(drawer)",
 };
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL ?? "", {
@@ -61,8 +57,14 @@ export default function RootLayout() {
 				<ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
 					<StatusBar style={isDarkColorScheme ? "light" : "dark"} />
 					<GestureHandlerRootView style={{ flex: 1 }}>
-						<Stack>
-							<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+						<Stack
+							screenOptions={{
+								headerShown: false,
+							}}
+							initialRouteName="(auth)"
+						>
+							<Stack.Screen name="(tabs)" />
+							<Stack.Screen name="(auth)" />
 							<Stack.Screen
 								name="modal"
 								options={{ title: "Modal", presentation: "modal" }}
