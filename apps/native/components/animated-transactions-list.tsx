@@ -1,6 +1,7 @@
 import { api } from "@hati-tayo/backend/convex/_generated/api";
 import type { Transaction } from "@hati-tayo/backend/convex/types";
 import { useQuery } from "convex/react";
+import { router } from "expo-router";
 import { Pressable, View } from "react-native";
 import Animated, {
 	Extrapolation,
@@ -95,7 +96,7 @@ const AnimatedTransactionList = () => {
 									<View className="flex-col items-center">
 										<Text className="font-sans text-lg">You owe</Text>
 
-										<Text className="font-geist-extrabold text-4xl text-red-400 tracking-tighter">
+										<Text className="font-bold text-4xl text-red-400 tracking-tighter">
 											{Intl.NumberFormat("en-PH", {
 												style: "currency",
 												currency: "PHP",
@@ -107,7 +108,7 @@ const AnimatedTransactionList = () => {
 									<View className="flex-col items-center">
 										<Text className="font-sans text-lg">You are owed</Text>
 
-										<Text className="font-geist-extrabold text-4xl text-primary tracking-tighter">
+										<Text className="font-bold text-4xl text-primary tracking-tighter">
 											{Intl.NumberFormat("en-PH", {
 												style: "currency",
 												currency: "PHP",
@@ -133,7 +134,12 @@ const AnimatedTransactionList = () => {
 							Start creating transactions now.
 						</Text>
 
-						<Button className="mt-4 w-full flex-row items-center justify-center gap-1 rounded-full p-4">
+						<Button
+							className="mt-4 w-full flex-row items-center justify-center gap-1 rounded-full p-4"
+							onPress={() => {
+								router.push("/create-transaction");
+							}}
+						>
 							<Text className="text-white">Create Transaction</Text>
 						</Button>
 					</View>

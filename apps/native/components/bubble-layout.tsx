@@ -1,6 +1,6 @@
 import type { Transaction } from "@hati-tayo/backend/convex/types";
-import { Animated, View } from "react-native";
-import {
+import { View } from "react-native";
+import Animated, {
 	ReduceMotion,
 	useAnimatedStyle,
 	useSharedValue,
@@ -93,7 +93,7 @@ export const FirstBubble = ({ solo, duo, transaction }: FirstBubbleProps) => {
 		>
 			<Text className="text-4xl">✈️</Text>
 			<Text className="text-muted-foreground text-xs">{transaction.name}</Text>
-			<Text className="font-geist-medium text-lg">
+			<Text className="font-medium text-lg">
 				{Intl.NumberFormat("en-PH", {
 					style: "currency",
 					currency: "PHP",

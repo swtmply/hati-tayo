@@ -77,7 +77,7 @@ const SignUpPage = () => {
 					name: form.getFieldValue("name"),
 				});
 
-				router.replace("/(auth)/sign-in");
+				router.push("/sign-in");
 			} else {
 				// If the status is not complete, check why. User may need to
 				// complete further steps.

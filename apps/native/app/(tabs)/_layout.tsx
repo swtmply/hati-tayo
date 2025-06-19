@@ -1,9 +1,15 @@
-import { Tabs } from "expo-router";
+import { useAuth } from "@clerk/clerk-expo";
+import { Redirect, Tabs } from "expo-router";
 import { TabBarIcon } from "~/components/tabbar-icon";
 import { useColorScheme } from "~/lib/use-color-scheme";
 
 export default function TabLayout() {
 	const { isDarkColorScheme } = useColorScheme();
+	const { isSignedIn } = useAuth();
+
+	if (!isSignedIn) {
+		return <Redirect href={"/(auth)/sign-in"} />;
+	}
 
 	return (
 		<Tabs

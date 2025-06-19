@@ -66,6 +66,7 @@ export default function RootLayout() {
 						>
 							<Stack.Screen name="(tabs)" />
 							<Stack.Screen name="(auth)" />
+							<Stack.Screen name="(screens)/create-transaction" />
 						</Stack>
 					</GestureHandlerRootView>
 				</ThemeProvider>
