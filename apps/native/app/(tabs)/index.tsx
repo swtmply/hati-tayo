@@ -14,7 +14,7 @@ export default function HomePage() {
 
 			<Button
 				size={"icon"}
-				className="absolute right-6 bottom-6 aspect-square h-16 w-16"
+				className="absolute right-6 bottom-32 aspect-square h-16 w-16"
 				onPress={() => router.push("/create-transaction")}
 			>
 				<Plus className="text-white" />

@@ -1,10 +1,11 @@
 import { useAuth } from "@clerk/clerk-expo";
+import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
+import { BlurView } from "expo-blur";
 import { Redirect, Tabs } from "expo-router";
 import { Home, Users2 } from "lucide-react-native";
-import { useColorScheme } from "~/lib/use-color-scheme";
+import { Pressable, StyleSheet } from "react-native";
 
 export default function TabLayout() {
-	const { isDarkColorScheme } = useColorScheme();
 	const { isSignedIn } = useAuth();
 
 	if (!isSignedIn) {
@@ -15,19 +16,35 @@ export default function TabLayout() {
 		<Tabs
 			screenOptions={{
 				headerShown: false,
-				tabBarActiveTintColor: isDarkColorScheme
-					? "hsl(217.2 91.2% 59.8%)"
-					: "hsl(221.2 83.2% 53.3%)",
-				tabBarInactiveTintColor: isDarkColorScheme
-					? "hsl(215 20.2% 65.1%)"
-					: "hsl(215.4 16.3% 46.9%)",
+				tabBarActiveTintColor: "#10b981",
 				tabBarStyle: {
-					backgroundColor: isDarkColorScheme
-						? "hsl(222.2 84% 4.9%)"
-						: "hsl(0 0% 100%)",
-					borderTopColor: isDarkColorScheme
-						? "hsl(217.2 32.6% 17.5%)"
-						: "hsl(214.3 31.8% 91.4%)",
+					position: "absolute",
+					backgroundColor: "transparent",
+					borderTopWidth: 1,
+					elevation: 0, // for Android
+					shadowOpacity: 0, // for iOS
+					height: 90,
+				},
+				tabBarItemStyle: {
+					display: "flex",
+					flexDirection: "row",
+					justifyContent: "center",
+					alignItems: "center",
+				},
+				tabBarLabelStyle: {
+					fontFamily: "Geist_600SemiBold",
+				},
+				tabBarBackground: () => (
+					<BlurView
+						intensity={40}
+						tint="systemChromeMaterial"
+						style={[StyleSheet.absoluteFill]}
+						experimentalBlurMethod="dimezisBlurView"
+					/>
+				),
+				tabBarButton: (props: BottomTabBarButtonProps) => {
+					// biome-ignore lint/suspicious/noExplicitAny: This is a necessary workaround for a ref type incompatibility between React Navigation and Pressable.
+					return <Pressable {...(props as any)} android_ripple={null} />;
 				},
 			}}
 		>
