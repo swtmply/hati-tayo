@@ -103,7 +103,7 @@ const CreateTransactionForm = () => {
 				>
 					<ChevronLeft className="text-primary" />
 				</TouchableOpacity>
-				<Text className="font-semibold text-xl">Create Transaction</Text>
+				<Text className="font-geist-semibold text-xl">Create Transaction</Text>
 				<ChevronLeft className="invisible" />
 			</View>
 
@@ -362,7 +362,7 @@ const CreateTransactionForm = () => {
 					Form.handleSubmit();
 				}}
 			>
-				<Text className="font-semibold">Create</Text>
+				<Text className="font-geist-semibold">Create</Text>
 			</Form.Button>
 
 			<AddMemberFormSheet

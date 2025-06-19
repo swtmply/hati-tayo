@@ -72,7 +72,7 @@ const AddMemberFormSheet = ({
 			footerComponent={FooterComponent}
 		>
 			<BottomSheetView className="gap-4 p-4">
-				<Text className="font-semibold text-2xl">Add Members</Text>
+				<Text className="font-geist-semibold text-2xl">Add Members</Text>
 				<SearchUserComboBox
 					onUserSelect={setSelectedUsers}
 					selectedUsers={selectedUsers}

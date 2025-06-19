@@ -90,7 +90,7 @@ const SettleTransactionFormSheet = ({
 			footerComponent={FooterComponent}
 		>
 			<BottomSheetView className="gap-4 p-4">
-				<Text className="font-semibold text-2xl">Select Members</Text>
+				<Text className="font-geist-semibold text-2xl">Select Members</Text>
 				{members.map((member) => (
 					<TouchableOpacity
 						key={member._id}

@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import { cn } from "~/lib/utils";
+import CurrencyFormat from "./currency-format";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
 import { Text } from "./ui/text";
@@ -20,7 +21,7 @@ const GroupCard = ({ group }: GroupCardProps) => {
 			className="flex-row justify-between rounded-lg border bg-background p-4"
 		>
 			<View className="gap-4">
-				<Text className="font-semibold text-xl tracking-tighter">
+				<Text className="font-geist-semibold text-xl tracking-tighter">
 					{group.name}
 				</Text>
 				<View className="-ml-2 flex-row items-center gap-2">
@@ -39,17 +40,13 @@ const GroupCard = ({ group }: GroupCardProps) => {
 				</View>
 			</View>
 			<View className="justify-end">
-				<Text
+				<CurrencyFormat
+					amount={group.totalOwed}
 					className={cn(
-						"text-right font-semibold text-xl tracking-tighter",
+						"text-right font-geist-semibold text-xl tracking-tighter",
 						group.totalOwed > 0 ? "text-red-400" : "text-primary",
 					)}
-				>
-					{Intl.NumberFormat("en-PH", {
-						style: "currency",
-						currency: "PHP",
-					}).format(group.totalOwed)}
-				</Text>
+				/>
 				<Text className="text-muted-foreground text-sm">
 					{group.transactionCount} transactions
 				</Text>

@@ -55,13 +55,13 @@ const SignInPage = () => {
 		<Container>
 			<ScrollView className="flex-1 p-6">
 				<View className="gap-4 py-8">
-					<Text className="mb-2 font-bold text-3xl text-foreground">
+					<Text className="mb-2 font-geist-bold text-3xl text-foreground">
 						Sign in
 					</Text>
 					<form.Field name="email">
 						{(field) => (
 							<View className="gap-2">
-								<Text className="font-medium">Account email</Text>
+								<Text className="font-geist-medium">Account email</Text>
 								<Input
 									placeholder="Enter Email"
 									onChangeText={field.handleChange}
@@ -75,7 +75,7 @@ const SignInPage = () => {
 					<form.Field name="password">
 						{(field) => (
 							<View className="gap-2">
-								<Text className="font-medium">Account password</Text>
+								<Text className="font-geist-medium">Account password</Text>
 								<Input
 									placeholder="Enter Password"
 									onChangeText={field.handleChange}

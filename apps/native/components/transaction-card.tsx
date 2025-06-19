@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import { cn } from "~/lib/utils";
+import CurrencyFormat from "./currency-format";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
 import { Text } from "./ui/text";
@@ -31,7 +32,7 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
 					<Text
 						numberOfLines={1}
 						ellipsizeMode="tail"
-						className="max-w-40 font-semibold text-xl tracking-tighter"
+						className="max-w-40 font-geist-semibold text-xl tracking-tighter"
 					>
 						{transaction.name}
 					</Text>
@@ -59,30 +60,25 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
 				<View>
 					<View className="flex-row items-center justify-end gap-1">
 						<Text>{transaction.payer.name} paid</Text>
-						<Text className="font-bold text-lg tracking-tighter">
-							{Intl.NumberFormat("en-PH", {
-								style: "currency",
-								currency: "PHP",
-							}).format(transaction.amount)}
-						</Text>
+
+						<CurrencyFormat
+							amount={transaction.amount}
+							className="font-geist-bold text-lg tracking-tighter"
+						/>
 					</View>
 					<View className="flex-row items-center justify-end gap-1">
 						<Text>
 							{transaction.share?.status === "PENDING" ? "You owe" : "You paid"}
 						</Text>
-						<Text
+						<CurrencyFormat
+							amount={transaction.share?.amount ?? 0}
 							className={cn(
-								"font-bold text-lg tracking-tighter",
+								"font-geist-bold text-lg tracking-tighter",
 								transaction.share?.status === "PENDING"
 									? "text-red-400"
 									: "text-primary",
 							)}
-						>
-							{Intl.NumberFormat("en-PH", {
-								style: "currency",
-								currency: "PHP",
-							}).format(transaction.share?.amount ?? 0)}
-						</Text>
+						/>
 					</View>
 				</View>
 				<View>

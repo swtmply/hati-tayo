@@ -33,7 +33,7 @@ const GroupDetails = () => {
 					<ChevronLeft className="invisible" />
 				</View>
 
-				<Text className="font-semibold text-xl">Transactions</Text>
+				<Text className="font-geist-semibold text-xl">Transactions</Text>
 
 				<View className="gap-2">
 					{[1, 2, 3, 4, 5].map((_) => (
@@ -54,11 +54,11 @@ const GroupDetails = () => {
 				>
 					<ChevronLeft className="text-primary" />
 				</TouchableOpacity>
-				<Text className="font-semibold text-xl">{group?.name}</Text>
+				<Text className="font-geist-semibold text-xl">{group?.name}</Text>
 				<ChevronLeft className="invisible" />
 			</View>
 
-			<Text className="font-semibold text-xl">Transactions</Text>
+			<Text className="font-geist-semibold text-xl">Transactions</Text>
 
 			<View className="gap-2">
 				{group.transactions.map((transaction) => (

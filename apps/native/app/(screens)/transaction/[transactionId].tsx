@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import { Container } from "~/components/container";
+import CurrencyFormat from "~/components/currency-format";
 import SettleTransactionFormSheet from "~/components/settle-transaction-form-sheet";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -56,7 +57,7 @@ const TransactionDetails = () => {
 					</View>
 				</View>
 
-				<Text className="font-semibold text-xl">Members</Text>
+				<Text className="font-geist-semibold text-xl">Members</Text>
 
 				<View>
 					{[1, 2, 3, 4, 5].map((_) => (
@@ -86,7 +87,7 @@ const TransactionDetails = () => {
 				>
 					<ChevronLeft className="text-primary" />
 				</TouchableOpacity>
-				<Text className="font-semibold text-xl">
+				<Text className="font-geist-semibold text-xl">
 					{transaction.group?.name} - {transaction.name}
 				</Text>
 				<ChevronLeft className="invisible" />
@@ -114,27 +115,23 @@ const TransactionDetails = () => {
 						{transaction.payer.name} paid
 					</Text>
 
-					<Text className="font-geist-extrabold text-4xl text-primary tracking-tighter">
-						{Intl.NumberFormat("en-PH", {
-							style: "currency",
-							currency: "PHP",
-						}).format(transaction.amount ?? 0)}
-					</Text>
+					<CurrencyFormat
+						amount={transaction.amount ?? 0}
+						className="font-geist-extrabold text-4xl text-primary tracking-tighter"
+					/>
 				</View>
 				<View className="flex-col items-center">
 					<Text className="font-sans text-lg">You owe</Text>
 
-					<Text className="font-geist-extrabold text-4xl text-red-400 tracking-tighter">
-						{Intl.NumberFormat("en-PH", {
-							style: "currency",
-							currency: "PHP",
-						}).format(transaction.totalOwed)}
-					</Text>
+					<CurrencyFormat
+						amount={transaction.totalOwed}
+						className="font-geist-extrabold text-4xl text-red-400 tracking-tighter"
+					/>
 				</View>
 			</View>
 
 			<View>
-				<Text className="font-semibold text-xl">Members</Text>
+				<Text className="font-geist-semibold text-xl">Members</Text>
 			</View>
 
 			<View className="flex-col gap-2">
@@ -149,22 +146,21 @@ const TransactionDetails = () => {
 						</Avatar>
 
 						<View className="flex-1 flex-row items-center justify-between">
-							<Text className="font-semibold text-lg">{participant.name}</Text>
+							<Text className="font-geist-semibold text-lg">
+								{participant.name}
+							</Text>
 							<Text className="font-sans">
 								{participant.share?.status === "PAID" ? "Paid " : "Owed "}
-								<Text
+
+								<CurrencyFormat
+									amount={participant.share?.amount ?? 0}
 									className={cn(
 										"font-geist-extrabold",
 										participant.share?.status === "PAID"
 											? "text-primary"
 											: "text-red-400",
 									)}
-								>
-									{Intl.NumberFormat("en-PH", {
-										style: "currency",
-										currency: "PHP",
-									}).format(participant.share?.amount ?? 0)}
-								</Text>
+								/>
 							</Text>
 						</View>
 					</View>

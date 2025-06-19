@@ -1,6 +1,15 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import {
+	Geist_400Regular,
+	Geist_500Medium,
+	Geist_600SemiBold,
+	Geist_700Bold,
+	Geist_800ExtraBold,
+	Geist_900Black,
+	useFonts,
+} from "@expo-google-fonts/geist";
+import {
 	DarkTheme,
 	DefaultTheme,
 	type Theme,
@@ -37,6 +46,15 @@ export default function RootLayout() {
 	const { colorScheme, isDarkColorScheme } = useColorScheme();
 	const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
 
+	const [fontsLoaded] = useFonts({
+		Geist_400Regular,
+		Geist_500Medium,
+		Geist_600SemiBold,
+		Geist_700Bold,
+		Geist_800ExtraBold,
+		Geist_900Black,
+	});
+
 	useIsomorphicLayoutEffect(() => {
 		if (hasMounted.current) {
 			return;
@@ -50,7 +68,7 @@ export default function RootLayout() {
 		hasMounted.current = true;
 	}, []);
 
-	if (!isColorSchemeLoaded) {
+	if (!isColorSchemeLoaded || !fontsLoaded) {
 		return null;
 	}
 	return (

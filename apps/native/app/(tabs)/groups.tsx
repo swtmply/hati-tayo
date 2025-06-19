@@ -11,7 +11,9 @@ const GroupsPage = () => {
 
 	return (
 		<Container>
-			<Text className="mb-2 font-bold text-3xl text-foreground">Home</Text>
+			<Text className="mb-2 font-geist-bold text-3xl text-foreground">
+				Home
+			</Text>
 
 			<ScrollView className="flex-1">
 				<View className="gap-2">

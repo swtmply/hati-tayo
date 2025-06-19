@@ -10,6 +10,7 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated";
 import { useIsomorphicLayoutEffect } from "~/app/_layout";
+import CurrencyFormat from "./currency-format";
 import { Text } from "./ui/text";
 
 interface BubbleLayoutProps {
@@ -102,12 +103,10 @@ export const FirstBubble = React.memo(
 				<Text className="text-muted-foreground text-xs dark:text-muted">
 					{transaction.name}
 				</Text>
-				<Text className="font-medium text-lg dark:text-primary-foreground">
-					{Intl.NumberFormat("en-PH", {
-						style: "currency",
-						currency: "PHP",
-					}).format(transaction.amount)}
-				</Text>
+				<CurrencyFormat
+					amount={transaction.amount ?? 0}
+					className="font-geist-medium text-lg dark:text-primary-foreground"
+				/>
 			</Animated.View>
 		);
 	},
@@ -173,12 +172,10 @@ const SecondBubble = React.memo(({ duo, transaction }: SecondBubbleProps) => {
 			<Text className="text-muted-foreground text-xs dark:text-muted">
 				{transaction.name}
 			</Text>
-			<Text className="font-medium text-lg dark:text-primary-foreground">
-				{Intl.NumberFormat("en-PH", {
-					style: "currency",
-					currency: "PHP",
-				}).format(transaction.amount)}
-			</Text>
+			<CurrencyFormat
+				amount={transaction.amount ?? 0}
+				className="font-geist-medium text-lg dark:text-primary-foreground"
+			/>
 		</Animated.View>
 	);
 });
@@ -233,12 +230,10 @@ const ThirdBubble = React.memo(
 				<Text className="text-muted-foreground text-xs dark:text-muted">
 					{transaction.name}
 				</Text>
-				<Text className="font-medium text-lg dark:text-primary-foreground">
-					{Intl.NumberFormat("en-PH", {
-						style: "currency",
-						currency: "PHP",
-					}).format(transaction.amount)}
-				</Text>
+				<CurrencyFormat
+					amount={transaction.amount ?? 0}
+					className="font-geist-medium text-sm dark:text-primary-foreground"
+				/>
 			</Animated.View>
 		);
 	},

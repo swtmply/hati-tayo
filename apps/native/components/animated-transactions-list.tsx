@@ -12,6 +12,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { cn } from "~/lib/utils";
 import { BubbleLayout } from "./bubble-layout";
+import CurrencyFormat from "./currency-format";
 import TransactionCard from "./transaction-card";
 import { Button } from "./ui/button";
 import { Text } from "./ui/text";
@@ -96,29 +97,25 @@ const AnimatedTransactionList = () => {
 									<View className="flex-col items-center">
 										<Text className="font-sans text-lg">You owe</Text>
 
-										<Text className="font-bold text-4xl text-red-400 tracking-tighter">
-											{Intl.NumberFormat("en-PH", {
-												style: "currency",
-												currency: "PHP",
-											}).format(shares?.totalOwed ?? 0)}
-										</Text>
+										<CurrencyFormat
+											amount={shares?.totalOwed ?? 0}
+											className="font-geist-bold text-4xl text-red-400 tracking-tighter"
+										/>
 									</View>
 								)}
 								{shares && shares?.totalPaid > 0 && (
 									<View className="flex-col items-center">
 										<Text className="font-sans text-lg">You are owed</Text>
 
-										<Text className="font-bold text-4xl text-primary tracking-tighter">
-											{Intl.NumberFormat("en-PH", {
-												style: "currency",
-												currency: "PHP",
-											}).format(shares?.totalPaid ?? 0)}
-										</Text>
+										<CurrencyFormat
+											amount={shares?.totalPaid ?? 0}
+											className="font-geist-bold text-4xl text-primary tracking-tighter"
+										/>
 									</View>
 								)}
 							</View>
 
-							<Text className="font-semibold">Transactions</Text>
+							<Text className="font-geist-semibold">Transactions</Text>
 						</Animated.View>
 					</Pressable>
 				);
@@ -129,7 +126,9 @@ const AnimatedTransactionList = () => {
 			ListEmptyComponent={() => {
 				return (
 					<View className="h-72 items-center justify-center">
-						<Text className="font-semibold text-lg">No transactions yet.</Text>
+						<Text className="font-geist-semibold text-lg">
+							No transactions yet.
+						</Text>
 						<Text className="font-sans text-neutral-500">
 							Start creating transactions now.
 						</Text>

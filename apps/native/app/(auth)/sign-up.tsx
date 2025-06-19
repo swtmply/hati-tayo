@@ -95,12 +95,12 @@ const SignUpPage = () => {
 			<Container>
 				<ScrollView className="flex-1 p-6">
 					<View className="gap-4 py-8">
-						<Text className="mb-2 font-bold text-3xl text-foreground">
+						<Text className="mb-2 font-geist-bold text-3xl text-foreground">
 							Account Verificatiion
 						</Text>
 
 						<View className="gap-2">
-							<Text className="font-medium">Verification Code</Text>
+							<Text className="font-geist-medium">Verification Code</Text>
 							<Input
 								placeholder="Enter verification code"
 								onChangeText={setCode}
@@ -123,13 +123,13 @@ const SignUpPage = () => {
 		<Container>
 			<ScrollView className="flex-1 p-6">
 				<View className="gap-4 py-8">
-					<Text className="mb-2 font-bold text-3xl text-foreground">
+					<Text className="mb-2 font-geist-bold text-3xl text-foreground">
 						Sign up
 					</Text>
 					<form.Field name="name">
 						{(field) => (
 							<View className="gap-2">
-								<Text className="font-medium">Account name</Text>
+								<Text className="font-geist-medium">Account name</Text>
 								<Input
 									placeholder="Enter Name"
 									onChangeText={field.handleChange}
@@ -143,7 +143,7 @@ const SignUpPage = () => {
 					<form.Field name="email">
 						{(field) => (
 							<View className="gap-2">
-								<Text className="font-medium">Account email</Text>
+								<Text className="font-geist-medium">Account email</Text>
 								<Input
 									placeholder="Enter Email"
 									onChangeText={field.handleChange}
@@ -157,7 +157,7 @@ const SignUpPage = () => {
 					<form.Field name="password">
 						{(field) => (
 							<View className="gap-2">
-								<Text className="font-medium">Account password</Text>
+								<Text className="font-geist-medium">Account password</Text>
 								<Input
 									placeholder="Enter Password"
 									onChangeText={field.handleChange}
