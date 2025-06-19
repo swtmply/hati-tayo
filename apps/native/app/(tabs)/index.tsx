@@ -9,7 +9,6 @@ export default function HomePage() {
 	return (
 		<Container>
 			<Text className="mb-2 font-bold text-3xl text-foreground">Home</Text>
-
 			<AnimatedTransactionList />
 
 			<Button

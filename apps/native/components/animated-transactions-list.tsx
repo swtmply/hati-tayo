@@ -69,7 +69,7 @@ const AnimatedTransactionList = () => {
 			keyExtractor={(item: Transaction) => item._id}
 			ItemSeparatorComponent={() => (
 				<Pressable>
-					<View className="h-2 bg-neutral-100" />
+					<View className="h-2 bg-background" />
 				</Pressable>
 			)}
 			ListHeaderComponent={() => {

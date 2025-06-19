@@ -99,10 +99,10 @@ export const FirstBubble = React.memo(
 				className="absolute top-12 left-12 aspect-square w-44 items-center justify-center gap-0.5 rounded-full bg-blue-200"
 			>
 				<Text className="text-4xl">✈️</Text>
-				<Text className="text-muted-foreground text-xs">
+				<Text className="text-muted-foreground text-xs dark:text-muted">
 					{transaction.name}
 				</Text>
-				<Text className="font-medium text-lg">
+				<Text className="font-medium text-lg dark:text-primary-foreground">
 					{Intl.NumberFormat("en-PH", {
 						style: "currency",
 						currency: "PHP",
@@ -170,8 +170,10 @@ const SecondBubble = React.memo(({ duo, transaction }: SecondBubbleProps) => {
 			className="absolute top-4 right-12 aspect-square w-32 items-center justify-center rounded-full bg-green-200"
 		>
 			<Text className="text-4xl">🏖️</Text>
-			<Text className="text-muted-foreground text-xs">{transaction.name}</Text>
-			<Text className="font-medium text-lg">
+			<Text className="text-muted-foreground text-xs dark:text-muted">
+				{transaction.name}
+			</Text>
+			<Text className="font-medium text-lg dark:text-primary-foreground">
 				{Intl.NumberFormat("en-PH", {
 					style: "currency",
 					currency: "PHP",
@@ -228,10 +230,10 @@ const ThirdBubble = React.memo(
 				className="absolute h-full max-h-28 w-28 items-center justify-center rounded-full bg-yellow-200"
 			>
 				<Text className="text-3xl">🍚</Text>
-				<Text className="text-muted-foreground text-xs">
+				<Text className="text-muted-foreground text-xs dark:text-muted">
 					{transaction.name}
 				</Text>
-				<Text className="font-medium text-lg">
+				<Text className="font-medium text-lg dark:text-primary-foreground">
 					{Intl.NumberFormat("en-PH", {
 						style: "currency",
 						currency: "PHP",

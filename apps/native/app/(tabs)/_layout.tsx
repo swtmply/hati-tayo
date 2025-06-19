@@ -4,9 +4,11 @@ import { BlurView } from "expo-blur";
 import { Redirect, Tabs } from "expo-router";
 import { Home, Users2 } from "lucide-react-native";
 import { Pressable, StyleSheet } from "react-native";
+import { useColorScheme } from "~/lib/use-color-scheme";
 
 export default function TabLayout() {
 	const { isSignedIn } = useAuth();
+	const { colorScheme } = useColorScheme();
 
 	if (!isSignedIn) {
 		return <Redirect href={"/(auth)/sign-in"} />;
@@ -16,7 +18,8 @@ export default function TabLayout() {
 		<Tabs
 			screenOptions={{
 				headerShown: false,
-				tabBarActiveTintColor: "#10b981",
+				tabBarActiveTintColor: colorScheme === "dark" ? "#4caf50" : "#2e7d32",
+				tabBarInactiveTintColor: colorScheme === "dark" ? "#3e4a3d" : undefined,
 				tabBarStyle: {
 					position: "absolute",
 					backgroundColor: "transparent",
@@ -37,7 +40,11 @@ export default function TabLayout() {
 				tabBarBackground: () => (
 					<BlurView
 						intensity={40}
-						tint="systemChromeMaterial"
+						tint={
+							colorScheme === "dark"
+								? "systemChromeMaterialDark"
+								: "systemChromeMaterialLight"
+						}
 						style={[StyleSheet.absoluteFill]}
 						experimentalBlurMethod="dimezisBlurView"
 					/>
