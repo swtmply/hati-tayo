@@ -1,51 +1,40 @@
 {
-  "expo": {
-    "name": "hati-tayo",
-    "slug": "hati-tayo",
-    "version": "1.0.0",
-    "scheme": "hati-tayo",
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      "expo-secure-store",
-      "expo-web-browser"
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "tsconfigPaths": true
-    },
-    "newArchEnabled": true,
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.amanvarshney01.mybettertapp"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.amanvarshney01.mybettertapp",
-      "edgeToEdgeEnabled": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "36eda174-42da-4efd-88a1-470b89e4a496"
-      }
-    }
-  }
+	"expo": {
+		"name": "hati-tayo",
+		"slug": "hati-tayo",
+		"version": "1.0.0",
+		"scheme": "hati-tayo",
+		"web": {
+			"bundler": "metro",
+			"output": "static",
+			"favicon": "./assets/favicon.png"
+		},
+		"plugins": ["expo-router", "expo-secure-store", "expo-web-browser"],
+		"experiments": {
+			"typedRoutes": true,
+			"tsconfigPaths": true
+		},
+		"newArchEnabled": true,
+		"orientation": "portrait",
+		"icon": "./assets/icon.png",
+		"userInterfaceStyle": "automatic",
+		"splash": {
+			"image": "./assets/splash.png",
+			"resizeMode": "contain",
+			"backgroundColor": "#ffffff"
+		},
+		"assetBundlePatterns": ["**/*"],
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.allenwhun.hatitayo"
+		},
+		"android": {
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/adaptive-icon.png",
+				"backgroundColor": "#ffffff"
+			},
+			"package": "com.allenwhun.hatitayo",
+			"edgeToEdgeEnabled": true
+		}
+	}
 }

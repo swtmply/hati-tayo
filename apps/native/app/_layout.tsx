@@ -72,7 +72,10 @@ export default function RootLayout() {
 		return null;
 	}
 	return (
-		<ClerkProvider tokenCache={tokenCache}>
+		<ClerkProvider
+			tokenCache={tokenCache}
+			publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
+		>
 			<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
 				<ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
 					<StatusBar style={isDarkColorScheme ? "light" : "dark"} />

@@ -12,7 +12,9 @@
 		"dev:server": "turbo -F @hati-tayo/backend dev",
 		"dev:setup": "turbo -F @hati-tayo/backend setup"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"expo-router": "^5.1.0"
+	},
 	"devDependencies": {
 		"turbo": "^2.5.4",
 		"@biomejs/biome": "1.9.4"

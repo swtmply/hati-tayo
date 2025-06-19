@@ -26,13 +26,10 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
 		>
 			<View className="gap-4">
 				<View className="flex-row items-center gap-2">
-					<Text className="aspect-square items-center justify-center rounded-full bg-emerald-200 p-2">
-						✨
-					</Text>
 					<Text
 						numberOfLines={1}
 						ellipsizeMode="tail"
-						className="max-w-40 font-geist-semibold text-xl tracking-tighter"
+						className="max-w-36 font-geist-semibold text-xl tracking-tighter"
 					>
 						{transaction.name}
 					</Text>

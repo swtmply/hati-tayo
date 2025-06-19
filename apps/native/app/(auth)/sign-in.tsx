@@ -35,6 +35,7 @@ const SignInPage = () => {
 
 				// If sign-in process is complete, set the created session as active
 				// and redirect the user
+
 				if (signInAttempt.status === "complete") {
 					await setActive({ session: signInAttempt.createdSessionId });
 					router.replace("/(tabs)");
