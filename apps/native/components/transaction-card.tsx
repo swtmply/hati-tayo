@@ -1,7 +1,8 @@
 import type { Transaction } from "@hati-tayo/backend/convex/types";
 import { formatDistanceToNow } from "date-fns";
+import { router } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { cn } from "~/lib/utils";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Text } from "./ui/text";
@@ -12,7 +13,10 @@ interface TransactionCardProps {
 
 const TransactionCard = ({ transaction }: TransactionCardProps) => {
 	return (
-		<View
+		<TouchableOpacity
+			onPress={() => {
+				router.push(`/transaction/${transaction._id}`);
+			}}
 			className={cn(
 				"flex-row justify-between rounded-lg border bg-background p-4",
 				transaction.isSettled ? "border-primary" : "border-red-400",
@@ -86,7 +90,7 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
 					</Text>
 				</View>
 			</View>
-		</View>
+		</TouchableOpacity>
 	);
 };
 
