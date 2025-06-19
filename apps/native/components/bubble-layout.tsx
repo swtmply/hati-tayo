@@ -1,4 +1,5 @@
 import type { Transaction } from "@hati-tayo/backend/convex/types";
+import React from "react";
 import { View } from "react-native";
 import Animated, {
 	ReduceMotion,
@@ -17,23 +18,22 @@ interface BubbleLayoutProps {
 	transactions: Transaction[] | undefined;
 }
 
-export const BubbleLayout = ({
-	solo,
-	duo,
-	transactions,
-}: BubbleLayoutProps) => {
-	const firstTransaction = transactions?.[0];
-	const secondTransaction = transactions?.[1];
-	const thirdTransaction = transactions?.[2];
+export const BubbleLayout = React.memo(
+	({ solo, duo, transactions }: BubbleLayoutProps) => {
+		const firstTransaction = transactions?.[0];
+		const secondTransaction = transactions?.[1];
+		const thirdTransaction = transactions?.[2];
 
-	return (
-		<View className="relative h-72 w-full">
-			<FirstBubble solo={solo} duo={duo} transaction={firstTransaction} />
-			<SecondBubble duo={duo} transaction={secondTransaction} />
-			<ThirdBubble transaction={thirdTransaction} />
-		</View>
-	);
-};
+		return (
+			<View className="relative h-72 w-full">
+				<FirstBubble solo={solo} duo={duo} transaction={firstTransaction} />
+				<SecondBubble duo={duo} transaction={secondTransaction} />
+				<ThirdBubble transaction={thirdTransaction} />
+			</View>
+		);
+	},
+);
+BubbleLayout.displayName = "BubbleLayout";
 
 interface FirstBubbleProps {
 	solo?: boolean;
@@ -41,74 +41,85 @@ interface FirstBubbleProps {
 	transaction: Transaction | undefined;
 }
 
-export const FirstBubble = ({ solo, duo, transaction }: FirstBubbleProps) => {
-	const scale = useSharedValue(0.5);
-	const position = useSharedValue({ x: 0, y: 0 });
+export const FirstBubble = React.memo(
+	({ solo, duo, transaction }: FirstBubbleProps) => {
+		const scale = useSharedValue(0.5);
+		const position = useSharedValue({ x: 0, y: 0 });
 
-	const size = solo ? 1.5 : duo ? 1.1 : 1;
-	const dimensions = {
-		x: solo ? 40 : duo ? 10 : 20,
-		y: solo ? 10 : duo ? 10 : 20,
-	};
-
-	const animate = () => {
-		scale.value = withTiming(size, { duration: 1000 });
-		position.value = withRepeat(
-			withSequence(
-				withTiming({ x: dimensions.x, y: dimensions.y }, { duration: 800 }),
-				withTiming({ x: dimensions.x + 2, y: dimensions.y }, { duration: 800 }),
-				withTiming({ x: dimensions.x, y: dimensions.y + 2 }, { duration: 800 }),
-			),
-			-1,
-			true,
-			() => {},
-			ReduceMotion.System,
-		);
-	};
-
-	const animatedStyle = useAnimatedStyle(() => {
-		return {
-			transform: [
-				{ scale: scale.value },
-				{ translateX: position.value.x },
-				{ translateY: position.value.y },
-			],
-			left: position.value.x,
-			top: position.value.y,
+		const size = solo ? 1.5 : duo ? 1.1 : 1;
+		const dimensions = {
+			x: solo ? 40 : duo ? 10 : 20,
+			y: solo ? 10 : duo ? 10 : 20,
 		};
-	});
 
-	useIsomorphicLayoutEffect(() => {
-		animate();
-	}, []);
+		const animate = () => {
+			scale.value = withTiming(size, { duration: 1000 });
+			position.value = withRepeat(
+				withSequence(
+					withTiming({ x: dimensions.x, y: dimensions.y }, { duration: 800 }),
+					withTiming(
+						{ x: dimensions.x + 2, y: dimensions.y },
+						{ duration: 800 },
+					),
+					withTiming(
+						{ x: dimensions.x, y: dimensions.y + 2 },
+						{ duration: 800 },
+					),
+				),
+				-1,
+				true,
+				() => {},
+				ReduceMotion.System,
+			);
+		};
 
-	if (!transaction) {
-		return null;
-	}
+		const animatedStyle = useAnimatedStyle(() => {
+			return {
+				transform: [
+					{ scale: scale.value },
+					{ translateX: position.value.x },
+					{ translateY: position.value.y },
+				],
+				left: position.value.x,
+				top: position.value.y,
+			};
+		});
 
-	return (
-		<Animated.View
-			style={animatedStyle}
-			className="absolute top-12 left-12 aspect-square w-44 items-center justify-center gap-0.5 rounded-full bg-blue-200"
-		>
-			<Text className="text-4xl">✈️</Text>
-			<Text className="text-muted-foreground text-xs">{transaction.name}</Text>
-			<Text className="font-medium text-lg">
-				{Intl.NumberFormat("en-PH", {
-					style: "currency",
-					currency: "PHP",
-				}).format(transaction.amount)}
-			</Text>
-		</Animated.View>
-	);
-};
+		useIsomorphicLayoutEffect(() => {
+			animate();
+		}, []);
+
+		if (!transaction) {
+			return null;
+		}
+
+		return (
+			<Animated.View
+				style={animatedStyle}
+				className="absolute top-12 left-12 aspect-square w-44 items-center justify-center gap-0.5 rounded-full bg-blue-200"
+			>
+				<Text className="text-4xl">✈️</Text>
+				<Text className="text-muted-foreground text-xs">
+					{transaction.name}
+				</Text>
+				<Text className="font-medium text-lg">
+					{Intl.NumberFormat("en-PH", {
+						style: "currency",
+						currency: "PHP",
+					}).format(transaction.amount)}
+				</Text>
+			</Animated.View>
+		);
+	},
+);
+FirstBubble.displayName = "FirstBubble";
 
 interface SecondBubbleProps {
 	duo?: boolean;
 	transaction: Transaction | undefined;
 }
 
-export const SecondBubble = ({ duo, transaction }: SecondBubbleProps) => {
+const SecondBubble = React.memo(({ duo, transaction }: SecondBubbleProps) => {
 	const scale = useSharedValue(0);
 	const position = useSharedValue({ x: 70, y: 0 });
 
@@ -168,64 +179,66 @@ export const SecondBubble = ({ duo, transaction }: SecondBubbleProps) => {
 			</Text>
 		</Animated.View>
 	);
-};
+});
+SecondBubble.displayName = "SecondBubble";
 
-export const ThirdBubble = ({
-	transaction,
-}: {
-	transaction: Transaction | undefined;
-}) => {
-	const scale = useSharedValue(0);
-	const position = useSharedValue({ x: 90, y: 0 });
+const ThirdBubble = React.memo(
+	({ transaction }: { transaction: Transaction | undefined }) => {
+		const scale = useSharedValue(0);
+		const position = useSharedValue({ x: 90, y: 0 });
 
-	const animate = () => {
-		scale.value = withTiming(1, { duration: 1000 });
-		position.value = withRepeat(
-			withSequence(
-				withTiming({ x: 95, y: 70 }, { duration: 800 }),
-				withTiming({ x: 95, y: 72 }, { duration: 800 }),
-				withTiming({ x: 97, y: 70 }, { duration: 800 }),
-			),
-			-1,
-			true,
-			() => {},
-			ReduceMotion.System,
-		);
-	};
-
-	const animatedStyle = useAnimatedStyle(() => {
-		return {
-			transform: [
-				{ scale: scale.value },
-				{ translateX: position.value.x },
-				{ translateY: position.value.y },
-			],
-			left: position.value.x,
-			top: position.value.y,
+		const animate = () => {
+			scale.value = withTiming(1, { duration: 1000 });
+			position.value = withRepeat(
+				withSequence(
+					withTiming({ x: 95, y: 70 }, { duration: 800 }),
+					withTiming({ x: 95, y: 72 }, { duration: 800 }),
+					withTiming({ x: 97, y: 70 }, { duration: 800 }),
+				),
+				-1,
+				true,
+				() => {},
+				ReduceMotion.System,
+			);
 		};
-	});
 
-	useIsomorphicLayoutEffect(() => {
-		animate();
-	}, []);
+		const animatedStyle = useAnimatedStyle(() => {
+			return {
+				transform: [
+					{ scale: scale.value },
+					{ translateX: position.value.x },
+					{ translateY: position.value.y },
+				],
+				left: position.value.x,
+				top: position.value.y,
+			};
+		});
 
-	if (!transaction) {
-		return null;
-	}
+		useIsomorphicLayoutEffect(() => {
+			animate();
+		}, []);
 
-	return (
-		<Animated.View
-			style={animatedStyle}
-			className="h-full max-h-28 w-28 items-center justify-center rounded-full bg-yellow-200"
-		>
-			<Text className="text-3xl">🍚</Text>
-			<Text className="text-muted-foreground text-xs">{transaction.name}</Text>
-			<Text className="font-medium text-lg">
-				{Intl.NumberFormat("en-PH", {
-					style: "currency",
-					currency: "PHP",
-				}).format(transaction.amount)}
-			</Text>
-		</Animated.View>
-	);
-};
+		if (!transaction) {
+			return null;
+		}
+
+		return (
+			<Animated.View
+				style={animatedStyle}
+				className="absolute h-full max-h-28 w-28 items-center justify-center rounded-full bg-yellow-200"
+			>
+				<Text className="text-3xl">🍚</Text>
+				<Text className="text-muted-foreground text-xs">
+					{transaction.name}
+				</Text>
+				<Text className="font-medium text-lg">
+					{Intl.NumberFormat("en-PH", {
+						style: "currency",
+						currency: "PHP",
+					}).format(transaction.amount)}
+				</Text>
+			</Animated.View>
+		);
+	},
+);
+ThirdBubble.displayName = "ThirdBubble";
