@@ -25,7 +25,7 @@ const SearchUserComboBox = ({
 	});
 
 	return (
-		<View className="flex-1 flex-col gap-4">
+		<View className="flex-1 flex-col gap-4 bg-background">
 			<Label>Selected Users:</Label>
 			<View className="flex flex-row gap-2">
 				{selectedUsers?.map((user) => {

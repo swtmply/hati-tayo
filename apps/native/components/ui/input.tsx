@@ -1,4 +1,5 @@
 import { TextInput, type TextInputProps } from "react-native";
+import { useColorScheme } from "~/lib/use-color-scheme";
 import { cn } from "~/lib/utils";
 
 function Input({
@@ -8,6 +9,8 @@ function Input({
 }: TextInputProps & {
 	ref?: React.RefObject<TextInput>;
 }) {
+	const { colorScheme } = useColorScheme();
+
 	return (
 		<TextInput
 			className={cn(
@@ -16,6 +19,7 @@ function Input({
 				className,
 			)}
 			placeholderClassName={cn("text-muted-foreground", placeholderClassName)}
+			placeholderTextColor={colorScheme === "dark" ? "#3e4a3d" : undefined}
 			{...props}
 		/>
 	);
