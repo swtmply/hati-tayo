@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Keyboard, type KeyboardEvent } from "react-native";
+import { useIsomorphicLayoutEffect } from "~/app/_layout";
 
 const EVENT_TYPE = {
 	// Only keyboardDidShow and keyboardDidHide events are available on Android with 1 exception: https://reactnative.dev/docs/keyboard#addlistener
@@ -15,7 +16,7 @@ export function useKeyboard(
 	const [isKeyboardVisible, setKeyboardVisible] = React.useState(false);
 	const [keyboardHeight, setKeyboardHeight] = React.useState(0);
 
-	React.useEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		const showListener = Keyboard.addListener(
 			EVENT_TYPE[eventType].show,
 			(e: KeyboardEvent) => {

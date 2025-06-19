@@ -9,9 +9,9 @@
  */
 
 import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
+	ApiFromModules,
+	FilterApi,
+	FunctionReference,
 } from "convex/server";
 import type * as auth from "../auth.js";
 import type * as groups from "../groups.js";
@@ -29,18 +29,18 @@ import type * as users from "../users.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  auth: typeof auth;
-  groups: typeof groups;
-  transaction_shares: typeof transaction_shares;
-  transactions: typeof transactions;
-  types: typeof types;
-  users: typeof users;
+	auth: typeof auth;
+	groups: typeof groups;
+	transaction_shares: typeof transaction_shares;
+	transactions: typeof transactions;
+	types: typeof types;
+	users: typeof users;
 }>;
 export declare const api: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "public">
+	typeof fullApi,
+	FunctionReference<any, "public">
 >;
 export declare const internal: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "internal">
+	typeof fullApi,
+	FunctionReference<any, "internal">
 >;

@@ -1,4 +1,4 @@
-import * as React from "react";
+import type * as React from "react";
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
@@ -6,6 +6,7 @@ import Animated, {
 	withSequence,
 	withTiming,
 } from "react-native-reanimated";
+import { useIsomorphicLayoutEffect } from "~/app/_layout";
 import { cn } from "~/lib/utils";
 
 const duration = 1000;
@@ -16,7 +17,7 @@ function Skeleton({
 }: Omit<React.ComponentPropsWithoutRef<typeof Animated.View>, "style">) {
 	const sv = useSharedValue(1);
 
-	React.useEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		sv.value = withRepeat(
 			withSequence(withTiming(0.5, { duration }), withTiming(1, { duration })),
 			-1,
