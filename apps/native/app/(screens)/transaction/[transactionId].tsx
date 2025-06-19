@@ -4,13 +4,14 @@ import { useQuery } from "convex/react";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { Container } from "~/components/container";
 import SettleTransactionFormSheet from "~/components/settle-transaction-form-sheet";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { ChevronLeft } from "~/components/ui/icons";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Text } from "~/components/ui/text";
 import { cn } from "~/lib/utils";
 
 const blurhash =

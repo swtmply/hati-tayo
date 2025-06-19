@@ -5,6 +5,7 @@ import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import { cn } from "~/lib/utils";
 import { Avatar, AvatarImage } from "./ui/avatar";
+import { Skeleton } from "./ui/skeleton";
 import { Text } from "./ui/text";
 
 interface TransactionCardProps {
@@ -91,6 +92,37 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
 				</View>
 			</View>
 		</TouchableOpacity>
+	);
+};
+
+export const TransactionCardSkeleton = () => {
+	return (
+		<View className="flex-row justify-between rounded-lg border bg-background p-4">
+			<View className="gap-4">
+				<View className="flex-row items-center gap-2">
+					<Skeleton className="h-8 w-32" />
+				</View>
+
+				<View className="flex-row items-center gap-2">
+					<Skeleton className="aspect-square h-12 rounded-full" />
+					<Skeleton className="-ml-6 aspect-square h-12 rounded-full" />
+					<Skeleton className="-ml-6 aspect-square h-12 rounded-full" />
+				</View>
+			</View>
+			<View className="flex-col items-end justify-between">
+				<View className="gap-2">
+					<View className="flex-row items-center justify-end gap-1">
+						<Skeleton className="h-6 w-32" />
+					</View>
+					<View className="flex-row items-center justify-end gap-1">
+						<Skeleton className="h-6 w-32" />
+					</View>
+				</View>
+				<View>
+					<Skeleton className="h-6 w-32" />
+				</View>
+			</View>
+		</View>
 	);
 };
 

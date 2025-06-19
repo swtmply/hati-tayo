@@ -6,6 +6,7 @@ import {
 	type Theme,
 	ThemeProvider,
 } from "@react-navigation/native";
+import { PortalHost } from "@rn-primitives/portal";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Stack } from "expo-router";
@@ -70,6 +71,7 @@ export default function RootLayout() {
 							<Stack.Screen name="(screens)/transaction/[transactionId]" />
 						</Stack>
 					</GestureHandlerRootView>
+					<PortalHost />
 				</ThemeProvider>
 			</ConvexProviderWithClerk>
 		</ClerkProvider>

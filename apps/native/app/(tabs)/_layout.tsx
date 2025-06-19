@@ -1,6 +1,6 @@
 import { useAuth } from "@clerk/clerk-expo";
 import { Redirect, Tabs } from "expo-router";
-import { TabBarIcon } from "~/components/tabbar-icon";
+import { Home, Users2 } from "lucide-react-native";
 import { useColorScheme } from "~/lib/use-color-scheme";
 
 export default function TabLayout() {
@@ -35,16 +35,14 @@ export default function TabLayout() {
 				name="index"
 				options={{
 					title: "Home",
-					tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+					tabBarIcon: ({ color }) => <Home color={color} />,
 				}}
 			/>
 			<Tabs.Screen
-				name="two"
+				name="groups"
 				options={{
-					title: "Explore",
-					tabBarIcon: ({ color }) => (
-						<TabBarIcon name="compass" color={color} />
-					),
+					title: "Groups",
+					tabBarIcon: ({ color }) => <Users2 color={color} />,
 				}}
 			/>
 		</Tabs>
