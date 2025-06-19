@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack",
-		"build": "next build",
+		"build": "cd ../../packages/backend && npx convex deploy --cmd 'cd ../../apps/app && turbo run build'",
 		"start": "next start",
 		"lint": "next lint"
 	},
