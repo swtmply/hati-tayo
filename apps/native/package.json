@@ -19,6 +19,7 @@
 		"@react-navigation/drawer": "^7.1.1",
 		"@react-navigation/native": "^7.0.14",
 		"@rn-primitives/avatar": "^1.2.0",
+		"@rn-primitives/dialog": "^1.2.0",
 		"@rn-primitives/label": "^1.2.0",
 		"@rn-primitives/select": "^1.2.0",
 		"@rn-primitives/slot": "^1.2.0",
@@ -53,7 +54,8 @@
 		"react-native-web": "^0.20.0",
 		"tailwind-merge": "^3.3.1",
 		"tailwindcss-animate": "^1.0.7",
-		"zod": "^3.25.64"
+		"zod": "^3.25.64",
+		"zustand": "^5.0.5"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.26.10",

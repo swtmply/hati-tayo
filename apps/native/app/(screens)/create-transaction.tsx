@@ -1,5 +1,5 @@
 import { api } from "@hati-tayo/backend/convex/_generated/api";
-import type { Id } from "@hati-tayo/backend/convex/_generated/dataModel";
+import type { Doc, Id } from "@hati-tayo/backend/convex/_generated/dataModel";
 import * as SelectPrimitive from "@rn-primitives/select";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
@@ -35,7 +35,7 @@ const CreateTransactionForm = () => {
 			transactionName: "",
 			amount: "",
 			payer: "",
-			members: [{ _id: "", name: "", image: "" }],
+			members: [{ _id: "", name: "", image: "", email: "" }],
 		},
 		validators: {
 			onChange: z.object({
@@ -49,23 +49,30 @@ const CreateTransactionForm = () => {
 						_id: z.string(),
 						name: z.string(),
 						image: z.string(),
+						email: z.string(),
 					}),
 				),
 			}),
 		},
 		onSubmit: ({ value }) => {
-			const participants = new Set<Id<"users">>();
-			participants.add(user?._id as Id<"users">);
+			const participants = [] as Doc<"users">[];
+			participants.push(user as Doc<"users">);
 
 			for (const member of value.members) {
-				participants.add(member._id as Id<"users">);
+				participants.push(member as Doc<"users">);
 			}
 
 			if (value.groupId !== "") {
 				const group = groups?.find((group) => group._id === value.groupId);
 				if (group) {
 					for (const member of group.members) {
-						participants.add(member._id as Id<"users">);
+						const userInMembers = member._id === user?._id;
+
+						if (userInMembers) {
+							continue;
+						}
+
+						participants.push(member);
 					}
 				}
 			}
@@ -76,7 +83,11 @@ const CreateTransactionForm = () => {
 				groupId:
 					value.groupId === "" ? undefined : (value.groupId as Id<"groups">),
 				payerId: value.payer as Id<"users">,
-				participants: Array.from(participants) as Id<"users">[],
+				participants: participants.map((user) => ({
+					_id: user._id,
+					name: user.name,
+					email: user.email,
+				})),
 				amount: Number(value.amount),
 				splitType: "EQUAL",
 			});
@@ -377,6 +388,7 @@ const CreateTransactionForm = () => {
 							_id: user._id,
 							name: user.name,
 							image: user.image,
+							email: user.email,
 						})),
 					);
 				}}

@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { getUserByEmail } from "./users";
 
@@ -137,7 +138,13 @@ export const createTransaction = mutation({
 		name: v.string(),
 		groupName: v.optional(v.string()),
 		groupId: v.optional(v.id("groups")),
-		participants: v.array(v.id("users")),
+		participants: v.array(
+			v.object({
+				_id: v.string(),
+				name: v.string(),
+				email: v.string(),
+			}),
+		),
 		amount: v.number(),
 		splitType: v.string(),
 		payerId: v.id("users"),
@@ -154,6 +161,27 @@ export const createTransaction = mutation({
 			throw new Error("User not found");
 		}
 
+		const participantsIds = [] as Id<"users">[];
+
+		// Insert users if they are not in the database
+		for (const participant of args.participants) {
+			if (participant._id.startsWith("anonymous-user-")) {
+				const id = await ctx.db.insert("users", {
+					name: participant.name,
+					email: participant.email,
+					image: `https://ui-avatars.com/api/?background=random&name=${participant.name.replace(" ", "+")}`,
+					groups: [],
+					transactions: [],
+					createdAt: Date.now(),
+					updatedAt: Date.now(),
+				});
+				participantsIds.push(id);
+			} else {
+				participantsIds.push(participant._id as Id<"users">);
+			}
+		}
+
+		// Create group if it doesn't exist
 		if (args.groupId === undefined) {
 			if (args.groupName === undefined) {
 				throw new Error("Cannot create transaction without group name");
@@ -166,7 +194,7 @@ export const createTransaction = mutation({
 			// Create group
 			const groupId = await ctx.db.insert("groups", {
 				name: args.groupName,
-				members: args.participants,
+				members: participantsIds,
 				transactions: [],
 				createdAt: Date.now(),
 				updatedAt: Date.now(),
@@ -175,11 +203,12 @@ export const createTransaction = mutation({
 			args.groupId = groupId;
 		}
 
+		// Create transaction
 		const transaction = await ctx.db.insert("transactions", {
 			name: args.name,
 			groupId: args.groupId,
 			payerId: args.payerId,
-			participants: args.participants,
+			participants: participantsIds,
 			amount: args.amount,
 			date: Date.now(),
 			splitType: args.splitType,
@@ -187,12 +216,13 @@ export const createTransaction = mutation({
 			updatedAt: Date.now(),
 		});
 
-		for (const participant of args.participants) {
+		// Create transaction shares
+		for (const participant of participantsIds) {
 			await ctx.db.insert("transactionShares", {
 				transactionId: transaction,
 				userId: participant,
 				status: args.payerId === participant ? "PAID" : "PENDING",
-				amount: args.amount / args.participants.length,
+				amount: args.amount / participantsIds.length,
 				createdAt: Date.now(),
 				updatedAt: Date.now(),
 			});

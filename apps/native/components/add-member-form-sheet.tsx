@@ -6,18 +6,35 @@ import BottomSheet, {
 	BottomSheetView,
 	useBottomSheet,
 } from "@gorhom/bottom-sheet";
-import type { Doc } from "@hati-tayo/backend/convex/_generated/dataModel";
+import type { Doc, Id } from "@hati-tayo/backend/convex/_generated/dataModel";
 import { remapProps } from "nativewind";
 import * as React from "react";
+import { View } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useColorScheme } from "~/lib/use-color-scheme";
 import SearchUserComboBox from "./search-user-combo-box";
 import { Button } from "./ui/button";
+import { Plus } from "./ui/icons";
+
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "~/components/ui/dialog";
+import { useKeyboard } from "~/hooks/useKeyboard";
+import { cn } from "~/lib/utils";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 interface AddMemberFormSheetProps {
 	index: number;
 	onClose: () => void;
-	onSubmit: (users: Doc<"users">[]) => void;
+	onSubmit: (users: CreateUser[]) => void;
 }
 
 declare module "@gorhom/bottom-sheet" {
@@ -38,13 +55,15 @@ remapProps(BottomSheet, {
 	handleIndicatorClassName: "handleIndicatorStyle",
 });
 
+export type CreateUser = Omit<Doc<"users">, "_creationTime">;
+
 const AddMemberFormSheet = ({
 	index,
 	onClose,
 	onSubmit,
 }: AddMemberFormSheetProps) => {
 	const bottomSheetRef = React.useRef<BottomSheet>(null);
-	const [selectedUsers, setSelectedUsers] = React.useState<Doc<"users">[]>([]);
+	const [selectedUsers, setSelectedUsers] = React.useState<CreateUser[]>([]);
 	const { colorScheme } = useColorScheme();
 
 	const handleSheetChanges = (index: number) => {
@@ -71,6 +90,8 @@ const AddMemberFormSheet = ({
 				<Button
 					onPress={() => {
 						onSubmit(selectedUsers);
+
+						setSelectedUsers([]);
 						close();
 					}}
 				>
@@ -100,13 +121,91 @@ const AddMemberFormSheet = ({
 			}}
 		>
 			<BottomSheetView className="h-full gap-4 bg-background p-4">
-				<Text className="font-geist-semibold text-2xl">Add Members</Text>
+				<View className="flex-row items-center justify-between">
+					<Text className="font-geist-semibold text-2xl">Add Members</Text>
+					<AddAnonymousMemberDialog
+						selectedUsers={selectedUsers}
+						onUserSelect={setSelectedUsers}
+					/>
+				</View>
 				<SearchUserComboBox
 					onUserSelect={setSelectedUsers}
 					selectedUsers={selectedUsers}
 				/>
 			</BottomSheetView>
 		</BottomSheet>
+	);
+};
+
+interface AddAnonymousMemberDialogProps {
+	selectedUsers: CreateUser[];
+	onUserSelect: React.Dispatch<React.SetStateAction<CreateUser[]>>;
+}
+
+const AddAnonymousMemberDialog = ({
+	selectedUsers,
+	onUserSelect,
+}: AddAnonymousMemberDialogProps) => {
+	const [userEmail, setUserEmail] = React.useState("");
+	const [userName, setUserName] = React.useState("");
+	const { isKeyboardVisible } = useKeyboard();
+
+	const addAnonymousMember = () => {
+		onUserSelect((prev) => [
+			...prev,
+			{
+				_id: `anonymous-user-${prev.length}` as Id<"users">,
+				name: userName,
+				image: `https://ui-avatars.com/api/?background=random&name=${userName.replace(" ", "+")}`,
+				email: userEmail,
+				groups: [],
+				transactions: [],
+				createdAt: new Date().getTime(),
+				updatedAt: new Date().getTime(),
+			},
+		]);
+	};
+
+	return (
+		<Dialog>
+			<DialogTrigger asChild>
+				<Button
+					size={"sm"}
+					variant={"outline"}
+					className="flex-row items-center gap-1 rounded-full"
+				>
+					<Plus className="aspect-square native:h-2 text-foreground group-active:text-accent-foreground" />
+					<Text>Anonymous Member</Text>
+				</Button>
+			</DialogTrigger>
+			<DialogContent
+				className={cn(
+					"sm:max-w-[425px]",
+					isKeyboardVisible ? "-translate-y-24" : "",
+				)}
+			>
+				<DialogHeader>
+					<DialogTitle>Enter member details</DialogTitle>
+					<DialogDescription>
+						Enter the name and email of the member you want to add.
+					</DialogDescription>
+				</DialogHeader>
+
+				<Label>Email</Label>
+				<Input placeholder="Email" onChangeText={setUserEmail} />
+
+				<Label>Name</Label>
+				<Input placeholder="Name" onChangeText={setUserName} />
+
+				<DialogFooter>
+					<DialogClose asChild>
+						<Button onPress={addAnonymousMember}>
+							<Text>OK</Text>
+						</Button>
+					</DialogClose>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	);
 };
 

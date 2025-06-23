@@ -1,8 +1,8 @@
 import { api } from "@hati-tayo/backend/convex/_generated/api";
-import type { Doc } from "@hati-tayo/backend/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import React from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { Pressable, ScrollView, TouchableOpacity, View } from "react-native";
+import type { CreateUser } from "./add-member-form-sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { CircleCheck } from "./ui/icons";
 import { Input } from "./ui/input";
@@ -10,8 +10,8 @@ import { Label } from "./ui/label";
 import { Text } from "./ui/text";
 
 interface SearchUserComboBoxProps {
-	selectedUsers: Doc<"users">[];
-	onUserSelect: React.Dispatch<React.SetStateAction<Doc<"users">[]>>;
+	selectedUsers: CreateUser[];
+	onUserSelect: React.Dispatch<React.SetStateAction<CreateUser[]>>;
 }
 
 const SearchUserComboBox = ({
@@ -30,12 +30,19 @@ const SearchUserComboBox = ({
 			<View className="flex flex-row gap-2">
 				{selectedUsers?.map((user) => {
 					return (
-						<Avatar alt={user.name} key={user._id}>
-							<AvatarImage source={{ uri: user.image }} />
-							<AvatarFallback>
-								<Text className="text-foreground">{user.name}</Text>
-							</AvatarFallback>
-						</Avatar>
+						<Pressable
+							key={user._id}
+							onPress={() => {
+								onUserSelect((prev) => prev.filter((u) => u._id !== user._id));
+							}}
+						>
+							<Avatar alt={user.name}>
+								<AvatarImage source={{ uri: user.image }} />
+								<AvatarFallback>
+									<Text className="text-foreground">{user.name}</Text>
+								</AvatarFallback>
+							</Avatar>
+						</Pressable>
 					);
 				})}
 				{selectedUsers?.length === 0 && (
