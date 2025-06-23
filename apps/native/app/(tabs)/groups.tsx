@@ -12,7 +12,7 @@ const GroupsPage = () => {
 	return (
 		<Container>
 			<Text className="mb-2 font-geist-bold text-3xl text-foreground">
-				Home
+				Groups
 			</Text>
 
 			<ScrollView className="flex-1">

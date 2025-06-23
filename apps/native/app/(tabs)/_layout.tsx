@@ -2,7 +2,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { BlurView } from "expo-blur";
 import { Redirect, Tabs } from "expo-router";
-import { Home, Users2 } from "lucide-react-native";
+import { Home, User2, Users2 } from "lucide-react-native";
 import { Pressable, StyleSheet } from "react-native";
 import { useColorScheme } from "~/lib/use-color-scheme";
 
@@ -67,6 +67,13 @@ export default function TabLayout() {
 				options={{
 					title: "Groups",
 					tabBarIcon: ({ color }) => <Users2 color={color} />,
+				}}
+			/>
+			<Tabs.Screen
+				name="profile"
+				options={{
+					title: "Profile",
+					tabBarIcon: ({ color }) => <User2 color={color} />,
 				}}
 			/>
 		</Tabs>

@@ -15,9 +15,6 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
 import { cn } from "~/lib/utils";
 
-const blurhash =
-	"|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
-
 const TransactionDetails = () => {
 	const { transactionId } = useLocalSearchParams();
 	const transaction = useQuery(api.transactions.getTransactionDetailsById, {
@@ -102,7 +99,6 @@ const TransactionDetails = () => {
 						borderRadius: 100,
 					}}
 					source={transaction.payer.image}
-					placeholder={{ blurhash }}
 					transition={1000}
 				/>
 			</View>
