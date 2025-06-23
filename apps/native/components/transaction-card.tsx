@@ -20,7 +20,7 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
 				router.push(`/transaction/${transaction._id}`);
 			}}
 			className={cn(
-				"flex-row justify-between rounded-lg border bg-background p-4",
+				"flex-row justify-between rounded-lg border bg-card p-4",
 				transaction.isSettled ? "border-primary" : "border-red-400",
 			)}
 		>

@@ -4,6 +4,7 @@ import {
 	Check,
 	ChevronDown,
 	ChevronLeft,
+	ChevronRight,
 	ChevronUp,
 	CircleCheck,
 	Plus,
@@ -33,12 +34,14 @@ iconWithClassName(X);
 iconWithClassName(Bell);
 iconWithClassName(Plus);
 iconWithClassName(ChevronLeft);
+iconWithClassName(ChevronRight);
 
 export {
 	Bell,
 	Check,
 	ChevronDown,
 	ChevronLeft,
+	ChevronRight,
 	ChevronUp,
 	CircleCheck,
 	Plus,

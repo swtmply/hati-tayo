@@ -18,7 +18,7 @@ const GroupCard = ({ group }: GroupCardProps) => {
 			onPress={() => {
 				router.push(`/group/${group._id}`);
 			}}
-			className="flex-row justify-between rounded-lg border bg-background p-4"
+			className="flex-row justify-between rounded-lg border border-border bg-card p-4"
 		>
 			<View className="gap-4">
 				<Text className="font-geist-semibold text-xl tracking-tighter">
