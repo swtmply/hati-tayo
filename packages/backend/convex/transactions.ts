@@ -203,6 +203,8 @@ export const createTransaction = mutation({
 			args.groupId = groupId;
 		}
 
+		console.log(participantsIds);
+
 		// Create transaction
 		const transaction = await ctx.db.insert("transactions", {
 			name: args.name,

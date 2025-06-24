@@ -71,21 +71,6 @@ const CreateTransactionForm = () => {
 				participants.push(member as Doc<"users">);
 			}
 
-			if (value.groupId !== "") {
-				const group = groups?.find((group) => group._id === value.groupId);
-				if (group) {
-					for (const member of group.members) {
-						const userInMembers = member._id === user?._id;
-
-						if (userInMembers) {
-							continue;
-						}
-
-						participants.push(member);
-					}
-				}
-			}
-
 			createTransaction({
 				name: value.transactionName,
 				groupName: value.groupName === "" ? undefined : value.groupName,
