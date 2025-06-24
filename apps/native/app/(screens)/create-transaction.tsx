@@ -36,6 +36,7 @@ const CreateTransactionForm = () => {
 			amount: "",
 			payer: "",
 			members: [{ _id: "", name: "", image: "", email: "" }],
+			selectedMembers: [{ _id: "", name: "", image: "", email: "" }],
 		},
 		validators: {
 			onChange: z.object({
@@ -52,13 +53,21 @@ const CreateTransactionForm = () => {
 						email: z.string(),
 					}),
 				),
+				selectedMembers: z.array(
+					z.object({
+						_id: z.string(),
+						name: z.string(),
+						image: z.string(),
+						email: z.string(),
+					}),
+				),
 			}),
 		},
 		onSubmit: ({ value }) => {
 			const participants = [] as Doc<"users">[];
-			participants.push(user as Doc<"users">);
+			for (const member of value.selectedMembers) {
+				if (member._id === "") continue;
 
-			for (const member of value.members) {
 				participants.push(member as Doc<"users">);
 			}
 
@@ -239,28 +248,162 @@ const CreateTransactionForm = () => {
 				)}
 			</Form.Field>
 
+			{/* MARK: Select Member List
+			 */}
+			<View className="flex flex-col gap-4">
+				<Label>Members</Label>
+				<Form.Subscribe selector={(state) => state.values.groupId}>
+					{(groupId) => {
+						return (
+							<Form.Subscribe
+								selector={(state) => state.values.selectedMembers}
+							>
+								{(selectedMembers) => {
+									const userIsSelected = selectedMembers.some(
+										(selectedMember) => selectedMember._id === user?._id,
+									);
+
+									return (
+										<Form.Subscribe selector={(state) => state.values.members}>
+											{(members) => {
+												const groupMembers = groups?.find(
+													(group) => group._id === groupId,
+												)?.members;
+
+												const newMembers = members.concat(groupMembers ?? []);
+
+												const userInGroup = newMembers.some(
+													(member) => member._id === user?._id,
+												);
+
+												return (
+													<View className="flex-row gap-2">
+														{/* User
+														 */}
+														{!userInGroup && (
+															<Pressable
+																onPress={() => {
+																	if (userIsSelected) {
+																		Form.removeFieldValue(
+																			"selectedMembers",
+																			selectedMembers.findIndex(
+																				(selectedMember) =>
+																					selectedMember._id === user?._id,
+																			),
+																		);
+																	} else {
+																		Form.pushFieldValue(
+																			"selectedMembers",
+																			user as Doc<"users">,
+																		);
+																	}
+																}}
+															>
+																<Avatar
+																	alt={user?.name || ""}
+																	className={cn(
+																		userIsSelected && "border-2 border-primary",
+																	)}
+																>
+																	<AvatarImage
+																		source={{
+																			uri: user?.image,
+																		}}
+																	/>
+																</Avatar>
+															</Pressable>
+														)}
+														{/* MARK: Group/Anonymous Members
+														 */}
+														{newMembers?.map((member) => {
+															if (member._id === "") return null;
+
+															const selected = selectedMembers.some(
+																(selectedMember) =>
+																	selectedMember._id === member._id,
+															);
+
+															return (
+																<Pressable
+																	key={member._id}
+																	onPress={() => {
+																		if (selected) {
+																			Form.removeFieldValue(
+																				"selectedMembers",
+																				selectedMembers.findIndex(
+																					(selectedMember) =>
+																						selectedMember._id === member._id,
+																				),
+																			);
+																		} else {
+																			Form.pushFieldValue(
+																				"selectedMembers",
+																				member,
+																			);
+																		}
+																	}}
+																>
+																	<Avatar
+																		alt={member.name}
+																		className={cn(
+																			selected && "border-2 border-primary",
+																		)}
+																	>
+																		<AvatarImage
+																			source={{
+																				uri: member.image,
+																			}}
+																		/>
+																	</Avatar>
+																</Pressable>
+															);
+														})}
+														{/* MARK: Add Member Button
+														 */}
+														<Pressable
+															onPress={() => {
+																setOpenFormSheet(0);
+															}}
+															className="h-10 w-10 items-center justify-center rounded-full border border-neutral-400 border-dashed"
+														>
+															<Plus className="text-neutral-400" />
+														</Pressable>
+													</View>
+												);
+											}}
+										</Form.Subscribe>
+									);
+								}}
+							</Form.Subscribe>
+						);
+					}}
+				</Form.Subscribe>
+			</View>
+
 			{/* MARK: Payer
 			 */}
 			<View className="flex flex-col gap-4">
 				<Label>Payer</Label>
-				<Form.Subscribe selector={(state) => state.values.groupId}>
-					{(groupId) => {
-						const members = groups?.find(
-							(group) => group._id === groupId,
-						)?.members;
+				<Form.Subscribe selector={(state) => state.values.selectedMembers}>
+					{(selectedMembers) => {
+						if (selectedMembers.length === 1 && selectedMembers[0]._id === "") {
+							return (
+								<Text className="text-center text-neutral-400">
+									Please select a member first
+								</Text>
+							);
+						}
 
 						return (
 							<View className="flex-row gap-2">
 								<Form.Subscribe selector={(state) => state.values.payer}>
 									{(payerId) => {
-										const defaultUserSelected = payerId === user?._id;
-
 										return (
 											<>
 												{/* MARK: Members
 												 */}
-												{members?.map((member) => {
-													if (!member) return null;
+												{selectedMembers?.map((member) => {
+													if (member._id === "") return null;
 
 													const selected = payerId === member._id;
 
@@ -286,75 +429,6 @@ const CreateTransactionForm = () => {
 														</Pressable>
 													);
 												})}
-												{/* MARK: User */}
-												{groupId === "" && (
-													<Pressable
-														onPress={() => {
-															Form.setFieldValue("payer", user?._id ?? "");
-														}}
-													>
-														<Avatar
-															alt={user?.name || "User"}
-															className={cn(
-																defaultUserSelected &&
-																	"border-2 border-primary",
-															)}
-														>
-															<AvatarImage
-																source={{
-																	uri: user?.image || "",
-																}}
-															/>
-														</Avatar>
-													</Pressable>
-												)}
-												{/* MARK: Add Member
-												 */}
-												<Form.Subscribe
-													selector={(state) => state.values.members}
-												>
-													{(values) => {
-														if (!values) return null;
-
-														return values?.map((value) => {
-															const selected = payerId === value._id;
-
-															if (value._id === "") return null;
-
-															return (
-																<Pressable
-																	onPress={() => {
-																		Form.setFieldValue("payer", value._id);
-																	}}
-																	key={value._id}
-																>
-																	<Avatar
-																		alt={value.name}
-																		className={cn(
-																			selected && "border-2 border-primary",
-																		)}
-																	>
-																		<AvatarImage
-																			source={{
-																				uri: value.image,
-																			}}
-																		/>
-																	</Avatar>
-																</Pressable>
-															);
-														});
-													}}
-												</Form.Subscribe>
-												{/* MARK: Add Member Button
-												 */}
-												<Pressable
-													onPress={() => {
-														setOpenFormSheet(0);
-													}}
-													className="h-10 w-10 items-center justify-center rounded-full border border-neutral-400 border-dashed"
-												>
-													<Plus className="text-neutral-400" />
-												</Pressable>
 											</>
 										);
 									}}
