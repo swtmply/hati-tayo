@@ -1,61 +1,66 @@
 {
-  "expo": {
-    "name": "hati-tayo",
-    "slug": "hati-tayo",
-    "version": "1.0.0",
-    "scheme": "hati-tayo",
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      "expo-secure-store",
-      "expo-web-browser",
-      [
-        "expo-contacts",
-        {
-          "contactsPermission": "Allow $(PRODUCT_NAME) to access your contacts."
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "tsconfigPaths": true
-    },
-    "newArchEnabled": true,
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.allenwhun.hatitayo"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.allenwhun.hatitayo",
-      "edgeToEdgeEnabled": true,
-      "permissions": [
-        "android.permission.READ_CONTACTS",
-        "android.permission.WRITE_CONTACTS"
-      ]
-    },
-    "extra": {
-      "eas": {
-        "projectId": "1419f4e0-c74e-47f2-ad75-76d06070a105"
-      }
-    }
-  }
+	"expo": {
+		"name": "Hati Tayo",
+		"slug": "hati-tayo",
+		"version": "1.0.0",
+		"scheme": "hati-tayo",
+		"web": {
+			"bundler": "metro",
+			"output": "static",
+			"favicon": "./assets/favicon.png"
+		},
+		"plugins": [
+			"expo-router",
+			"expo-secure-store",
+			"expo-web-browser",
+			[
+				"expo-contacts",
+				{
+					"contactsPermission": "Allow $(PRODUCT_NAME) to access your contacts."
+				}
+			],
+			[
+				"expo-splash-screen",
+				{
+					"backgroundColor": "#F8F5F0",
+					"image": "./assets/splash.png",
+					"dark": {
+						"image": "./assets/splash-dark.png",
+						"backgroundColor": "#1C2A1F"
+					},
+					"resizeMode": "contain"
+				}
+			]
+		],
+		"experiments": {
+			"typedRoutes": true,
+			"tsconfigPaths": true
+		},
+		"newArchEnabled": true,
+		"orientation": "portrait",
+		"icon": "./assets/icon.png",
+		"userInterfaceStyle": "automatic",
+		"assetBundlePatterns": ["**/*"],
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.allenwhun.hatitayo"
+		},
+		"android": {
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/adaptive-icon.png",
+				"backgroundColor": "#F8F5F0"
+			},
+			"package": "com.allenwhun.hatitayo",
+			"edgeToEdgeEnabled": true,
+			"permissions": [
+				"android.permission.READ_CONTACTS",
+				"android.permission.WRITE_CONTACTS"
+			]
+		},
+		"extra": {
+			"eas": {
+				"projectId": "1419f4e0-c74e-47f2-ad75-76d06070a105"
+			}
+		}
+	}
 }

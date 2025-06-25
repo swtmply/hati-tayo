@@ -20,6 +20,7 @@ import { PortalHost } from "@rn-primitives/portal";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { remapProps } from "nativewind";
 import React, { useRef } from "react";
@@ -29,6 +30,9 @@ import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/use-color-scheme";
 import "../global.css";
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 declare module "@gorhom/bottom-sheet" {
 	interface BottomSheetProps {
@@ -86,11 +90,13 @@ export default function RootLayout() {
 		setAndroidNavigationBar(colorScheme);
 		setIsColorSchemeLoaded(true);
 		hasMounted.current = true;
+		SplashScreen.hide();
 	}, []);
 
 	if (!isColorSchemeLoaded || !fontsLoaded) {
 		return null;
 	}
+
 	return (
 		<ClerkProvider
 			tokenCache={tokenCache}

@@ -39,6 +39,7 @@
 		"expo-navigation-bar": "~4.2.3",
 		"expo-router": "~5.0.3",
 		"expo-secure-store": "~14.2.3",
+		"expo-splash-screen": "~0.30.9",
 		"expo-status-bar": "~2.2.3",
 		"expo-system-ui": "~5.0.6",
 		"expo-web-browser": "~14.1.6",
