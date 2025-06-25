@@ -142,7 +142,7 @@ export const createTransaction = mutation({
 			v.object({
 				_id: v.string(),
 				name: v.string(),
-				email: v.string(),
+				email: v.optional(v.string()),
 			}),
 		),
 		amount: v.number(),
