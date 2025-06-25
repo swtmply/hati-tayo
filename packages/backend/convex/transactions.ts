@@ -143,11 +143,12 @@ export const createTransaction = mutation({
 				_id: v.string(),
 				name: v.string(),
 				email: v.optional(v.string()),
+				phoneNumber: v.optional(v.string()),
 			}),
 		),
 		amount: v.number(),
 		splitType: v.string(),
-		payerId: v.id("users"),
+		payerId: v.string(),
 	},
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
@@ -162,22 +163,36 @@ export const createTransaction = mutation({
 		}
 
 		const participantsIds = [] as Id<"users">[];
+		let payerId: Id<"users"> = "" as Id<"users">;
 
 		// Insert users if they are not in the database
 		for (const participant of args.participants) {
-			if (participant._id.startsWith("anonymous-user-")) {
+			if (
+				participant._id.startsWith("anonymous-user-") ||
+				participant._id.startsWith("contact-")
+			) {
 				const id = await ctx.db.insert("users", {
 					name: participant.name,
 					email: participant.email,
 					image: `https://ui-avatars.com/api/?background=random&name=${participant.name.replace(" ", "+")}`,
 					groups: [],
 					transactions: [],
+					phoneNumber: participant.phoneNumber,
 					createdAt: Date.now(),
 					updatedAt: Date.now(),
 				});
+
+				if (participant._id === args.payerId) {
+					payerId = id;
+				}
+
 				participantsIds.push(id);
 			} else {
 				participantsIds.push(participant._id as Id<"users">);
+
+				if (participant._id === args.payerId) {
+					payerId = participant._id as Id<"users">;
+				}
 			}
 		}
 
@@ -203,13 +218,11 @@ export const createTransaction = mutation({
 			args.groupId = groupId;
 		}
 
-		console.log(participantsIds);
-
 		// Create transaction
 		const transaction = await ctx.db.insert("transactions", {
 			name: args.name,
 			groupId: args.groupId,
-			payerId: args.payerId,
+			payerId,
 			participants: participantsIds,
 			amount: args.amount,
 			date: Date.now(),
@@ -223,7 +236,7 @@ export const createTransaction = mutation({
 			await ctx.db.insert("transactionShares", {
 				transactionId: transaction,
 				userId: participant,
-				status: args.payerId === participant ? "PAID" : "PENDING",
+				status: payerId === participant ? "PAID" : "PENDING",
 				amount: args.amount / participantsIds.length,
 				createdAt: Date.now(),
 				updatedAt: Date.now(),
