@@ -12,6 +12,7 @@ import type { TransactionShareMembers } from "@hati-tayo/backend/convex/types";
 import { useMutation } from "convex/react";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
+import { useColorScheme } from "~/lib/use-color-scheme";
 import { cn } from "~/lib/utils";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
@@ -37,6 +38,7 @@ const SettleTransactionFormSheet = ({
 	const updateTransactionShare = useMutation(
 		api.transaction_shares.updateTransactionShare,
 	);
+	const { colorScheme } = useColorScheme();
 
 	const handleSheetChanges = (index: number) => {
 		if (index === -1) {
@@ -88,6 +90,13 @@ const SettleTransactionFormSheet = ({
 			enableDynamicSizing={false}
 			index={index}
 			footerComponent={FooterComponent}
+			handleClassName="bg-background rounded-t-2xl"
+			handleIndicatorStyle={{
+				backgroundColor: colorScheme === "dark" ? "#4caf50" : "#2e7d32",
+			}}
+			backgroundStyle={{
+				backgroundColor: colorScheme === "dark" ? "#1c2a1f" : "#f8f5f0",
+			}}
 		>
 			<BottomSheetView className="gap-4 p-4">
 				<Text className="font-geist-semibold text-2xl">Select Members</Text>
@@ -111,8 +120,9 @@ const SettleTransactionFormSheet = ({
 						</View>
 						<CircleCheck
 							className={cn(
+								"text-foreground",
 								selectedUsers.includes(member) &&
-									"rounded-full bg-emerald-100 text-primary",
+									"rounded-full bg-secondary text-primary",
 							)}
 						/>
 					</TouchableOpacity>

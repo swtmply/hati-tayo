@@ -28,6 +28,7 @@ const CreateTransactionForm = () => {
 	const user = useQuery(api.auth.get);
 	const createTransaction = useMutation(api.transactions.createTransaction);
 
+	// MARK: Form
 	const Form = useAppForm({
 		defaultValues: {
 			groupName: "",
@@ -35,8 +36,8 @@ const CreateTransactionForm = () => {
 			transactionName: "",
 			amount: "",
 			payer: "",
-			members: [{ _id: "", name: "", image: "", email: "" }],
-			selectedMembers: [{ _id: "", name: "", image: "", email: "" }],
+			members: [{ _id: "", name: "", image: "" }],
+			selectedMembers: [{ _id: "", name: "", image: "" }],
 		},
 		validators: {
 			onChange: z.object({
@@ -50,7 +51,7 @@ const CreateTransactionForm = () => {
 						_id: z.string(),
 						name: z.string(),
 						image: z.string(),
-						email: z.string(),
+						email: z.string().optional(),
 					}),
 				),
 				selectedMembers: z.array(
@@ -58,11 +59,12 @@ const CreateTransactionForm = () => {
 						_id: z.string(),
 						name: z.string(),
 						image: z.string(),
-						email: z.string(),
+						email: z.string().optional(),
 					}),
 				),
 			}),
 		},
+		// MARK: onSubmit
 		onSubmit: ({ value }) => {
 			const participants = [] as Doc<"users">[];
 			for (const member of value.selectedMembers) {

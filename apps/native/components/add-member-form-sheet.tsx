@@ -7,7 +7,6 @@ import BottomSheet, {
 	useBottomSheet,
 } from "@gorhom/bottom-sheet";
 import type { Doc, Id } from "@hati-tayo/backend/convex/_generated/dataModel";
-import { remapProps } from "nativewind";
 import * as React from "react";
 import { View } from "react-native";
 import { Text } from "~/components/ui/text";
@@ -36,24 +35,6 @@ interface AddMemberFormSheetProps {
 	onClose: () => void;
 	onSubmit: (users: CreateUser[]) => void;
 }
-
-declare module "@gorhom/bottom-sheet" {
-	interface BottomSheetProps {
-		className?: string;
-		containerClassName?: string;
-		backgroundClassName?: string;
-		handleClassName?: string;
-		handleIndicatorClassName?: string;
-	}
-}
-
-remapProps(BottomSheet, {
-	className: "style",
-	containerClassName: "containerStyle",
-	backgroundClassName: "backgroundStyle",
-	handleClassName: "handleStyle",
-	handleIndicatorClassName: "handleIndicatorStyle",
-});
 
 export type CreateUser = Omit<Doc<"users">, "_creationTime">;
 

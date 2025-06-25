@@ -9,6 +9,7 @@ import {
 	Geist_900Black,
 	useFonts,
 } from "@expo-google-fonts/geist";
+import BottomSheet from "@gorhom/bottom-sheet";
 import {
 	DarkTheme,
 	DefaultTheme,
@@ -20,6 +21,7 @@ import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { remapProps } from "nativewind";
 import React, { useRef } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -27,6 +29,24 @@ import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/use-color-scheme";
 import "../global.css";
+
+declare module "@gorhom/bottom-sheet" {
+	interface BottomSheetProps {
+		className?: string;
+		containerClassName?: string;
+		backgroundClassName?: string;
+		handleClassName?: string;
+		handleIndicatorClassName?: string;
+	}
+}
+
+remapProps(BottomSheet, {
+	className: "style",
+	containerClassName: "containerStyle",
+	backgroundClassName: "backgroundStyle",
+	handleClassName: "handleStyle",
+	handleIndicatorClassName: "handleIndicatorStyle",
+});
 
 const LIGHT_THEME: Theme = {
 	...DefaultTheme,

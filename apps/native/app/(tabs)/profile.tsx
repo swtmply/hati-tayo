@@ -42,7 +42,7 @@ const ProfilePage = () => {
 			</Text>
 
 			<View className="gap-0.5 rounded-lg bg-card shadow">
-				<View className="flex-row items-center justify-between border-border border-b p-2">
+				<View className="flex-row items-center justify-between border-border border-b px-4 py-2">
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Name
 					</Text>
@@ -51,7 +51,7 @@ const ProfilePage = () => {
 						<ChevronRight className="text-muted-foreground" />
 					</View>
 				</View>
-				<View className="flex-row items-center justify-between border-border border-b p-2">
+				<View className="flex-row items-center justify-between border-border px-4 py-2">
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Email
 					</Text>
@@ -67,7 +67,7 @@ const ProfilePage = () => {
 			</Text>
 
 			<View className="gap-0.5 rounded-lg bg-card shadow">
-				<View className="flex-row items-center justify-between border-border border-b p-2">
+				<View className="flex-row items-center justify-between border-border border-b px-4 py-2">
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Password
 					</Text>
@@ -78,7 +78,7 @@ const ProfilePage = () => {
 				</View>
 				<Pressable
 					onPress={logout}
-					className="flex-row items-center justify-between border-border p-2"
+					className="flex-row items-center justify-between border-border px-4 py-2"
 				>
 					<Text className="font-geist-medium text-destructive text-lg">
 						Logout
