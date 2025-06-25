@@ -52,6 +52,7 @@ const CreateTransactionForm = () => {
 						name: z.string(),
 						image: z.string(),
 						email: z.string().optional(),
+						phoneNumber: z.string().optional(),
 					}),
 				),
 				selectedMembers: z.array(
@@ -60,6 +61,7 @@ const CreateTransactionForm = () => {
 						name: z.string(),
 						image: z.string(),
 						email: z.string().optional(),
+						phoneNumber: z.string().optional(),
 					}),
 				),
 			}),
@@ -83,6 +85,7 @@ const CreateTransactionForm = () => {
 					_id: user._id,
 					name: user.name,
 					email: user.email,
+					phoneNumber: user.phoneNumber,
 				})),
 				amount: Number(value.amount),
 				splitType: "EQUAL",
@@ -428,14 +431,21 @@ const CreateTransactionForm = () => {
 
 			{/* MARK: Submit Button
 			 */}
-			<Form.Button
-				className="mt-4"
-				onPress={() => {
-					Form.handleSubmit();
+			<Form.Subscribe selector={(state) => state.values.payer}>
+				{(payerId) => {
+					return (
+						<Form.Button
+							className="mt-4"
+							disabled={payerId === ""}
+							onPress={() => {
+								Form.handleSubmit();
+							}}
+						>
+							<Text className="font-geist-semibold">Create</Text>
+						</Form.Button>
+					);
 				}}
-			>
-				<Text className="font-geist-semibold">Create</Text>
-			</Form.Button>
+			</Form.Subscribe>
 
 			<AddMemberFormSheet
 				index={openFormSheet}
@@ -450,6 +460,7 @@ const CreateTransactionForm = () => {
 							name: user.name,
 							image: user.image,
 							email: user.email,
+							phoneNumber: user.phoneNumber,
 						})),
 					);
 				}}

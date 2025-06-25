@@ -3,7 +3,7 @@ import BottomSheet, {
 	type BottomSheetBackdropProps,
 	BottomSheetFooter,
 	type BottomSheetFooterProps,
-	BottomSheetView,
+	BottomSheetScrollView,
 	useBottomSheet,
 } from "@gorhom/bottom-sheet";
 import type { Doc, Id } from "@hati-tayo/backend/convex/_generated/dataModel";
@@ -82,7 +82,7 @@ const AddMemberFormSheet = ({
 		);
 	};
 
-	const snapPoints = ["75%", "100%"];
+	const snapPoints = ["75%", "95%"];
 
 	return (
 		<BottomSheet
@@ -101,7 +101,7 @@ const AddMemberFormSheet = ({
 				backgroundColor: colorScheme === "dark" ? "#1c2a1f" : "#f8f5f0",
 			}}
 		>
-			<BottomSheetView className="h-full gap-4 bg-background p-4">
+			<BottomSheetScrollView className="h-full gap-4 bg-background p-4">
 				<View className="flex-row items-center justify-between">
 					<Text className="font-geist-semibold text-2xl">Add Members</Text>
 					<AddAnonymousMemberDialog
@@ -113,7 +113,7 @@ const AddMemberFormSheet = ({
 					onUserSelect={setSelectedUsers}
 					selectedUsers={selectedUsers}
 				/>
-			</BottomSheetView>
+			</BottomSheetScrollView>
 		</BottomSheet>
 	);
 };
@@ -129,6 +129,7 @@ const AddAnonymousMemberDialog = ({
 }: AddAnonymousMemberDialogProps) => {
 	const [userEmail, setUserEmail] = React.useState("");
 	const [userName, setUserName] = React.useState("");
+	const [userPhoneNumber, setUserPhoneNumber] = React.useState("");
 	const { isKeyboardVisible } = useKeyboard();
 
 	const addAnonymousMember = () => {
@@ -139,6 +140,7 @@ const AddAnonymousMemberDialog = ({
 				name: userName,
 				image: `https://ui-avatars.com/api/?background=random&name=${userName.replace(" ", "+")}`,
 				email: userEmail,
+				phoneNumber: userPhoneNumber,
 				groups: [],
 				transactions: [],
 				createdAt: new Date().getTime(),
@@ -174,6 +176,13 @@ const AddAnonymousMemberDialog = ({
 
 				<Label>Email</Label>
 				<Input placeholder="Email" onChangeText={setUserEmail} />
+
+				<Label>Phone Number</Label>
+				<Input
+					placeholder="Phone Number"
+					onChangeText={setUserPhoneNumber}
+					keyboardType="numeric"
+				/>
 
 				<Label>Name</Label>
 				<Input placeholder="Name" onChangeText={setUserName} />

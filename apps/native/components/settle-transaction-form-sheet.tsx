@@ -79,7 +79,7 @@ const SettleTransactionFormSheet = ({
 		);
 	};
 
-	const snapPoints = ["75%", "100%"];
+	const snapPoints = ["75%", "95%"];
 
 	return (
 		<BottomSheet
