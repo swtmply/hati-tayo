@@ -23,12 +23,13 @@
 				"expo-splash-screen",
 				{
 					"backgroundColor": "#F8F5F0",
-					"image": "./assets/splash.png",
+					"image": "./assets/splash-icon-light.png",
 					"dark": {
-						"image": "./assets/splash-dark.png",
+						"image": "./assets/splash-icon-dark.png",
 						"backgroundColor": "#1C2A1F"
 					},
-					"resizeMode": "contain"
+					"resizeMode": "contain",
+					"imageWidth": 200
 				}
 			]
 		],
@@ -38,12 +39,17 @@
 		},
 		"newArchEnabled": true,
 		"orientation": "portrait",
-		"icon": "./assets/icon.png",
+		"icon": "./assets/ios-light.png",
 		"userInterfaceStyle": "automatic",
 		"assetBundlePatterns": ["**/*"],
 		"ios": {
 			"supportsTablet": true,
-			"bundleIdentifier": "com.allenwhun.hatitayo"
+			"bundleIdentifier": "com.allenwhun.hatitayo",
+			"icon": {
+				"dark": "./assets/ios-dark.png",
+				"light": "./assets/ios-light.png",
+				"tinted": "./assets/ios-tinted.png"
+			}
 		},
 		"android": {
 			"adaptiveIcon": {
