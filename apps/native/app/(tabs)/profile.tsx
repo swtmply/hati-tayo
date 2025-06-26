@@ -3,7 +3,7 @@ import { api } from "@hati-tayo/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { Container } from "~/components/container";
 import { Button } from "~/components/ui/button";

@@ -29,9 +29,9 @@ const SignUpPage = () => {
 		},
 		validators: {
 			onChange: z.object({
-				name: z.string().min(1),
-				email: z.string().email(),
-				password: z.string().min(1),
+				name: z.string().min(1, { message: "Name is required" }),
+				email: z.string().email({ message: "Invalid email" }),
+				password: z.string().min(1, { message: "Password is required" }),
 			}),
 		},
 		onSubmit: async ({ value }) => {
@@ -139,6 +139,14 @@ const SignUpPage = () => {
 									clearButtonMode="while-editing"
 									className="native:h-14 rounded-full px-4"
 								/>
+								{field.state.meta.errors &&
+								field.state.meta.errors.length > 0 ? (
+									<Text className="text-destructive text-sm">
+										{field.state.meta.errors
+											.map((error) => error?.message)
+											.join(", ")}
+									</Text>
+								) : null}
 							</View>
 						)}
 					</form.Field>
@@ -153,6 +161,14 @@ const SignUpPage = () => {
 									clearButtonMode="while-editing"
 									className="native:h-14 rounded-full px-4"
 								/>
+								{field.state.meta.errors &&
+								field.state.meta.errors.length > 0 ? (
+									<Text className="text-destructive text-sm">
+										{field.state.meta.errors
+											.map((error) => error?.message)
+											.join(", ")}
+									</Text>
+								) : null}
 							</View>
 						)}
 					</form.Field>
@@ -168,6 +184,14 @@ const SignUpPage = () => {
 									className="native:h-14 rounded-full px-4"
 									secureTextEntry
 								/>
+								{field.state.meta.errors &&
+								field.state.meta.errors.length > 0 ? (
+									<Text className="text-destructive text-sm">
+										{field.state.meta.errors
+											.map((error) => error?.message)
+											.join(", ")}
+									</Text>
+								) : null}
 							</View>
 						)}
 					</form.Field>

@@ -40,12 +40,22 @@ const CreateTransactionForm = () => {
 			selectedMembers: [{ _id: "", name: "", image: "" }],
 		},
 		validators: {
-			onChange: z.object({
-				groupName: z.string().min(1),
-				groupId: z.string(),
-				transactionName: z.string().min(1),
-				amount: z.string().min(1),
-				payer: z.string(),
+			onSubmit: z.object({
+				groupName: z.string().min(1, "Group name is required."),
+				groupId: z.string(), // Not directly validated with message, linked to groupName
+				transactionName: z.string().min(1, "Transaction name is required."),
+				amount: z
+					.string()
+					.min(1, "Amount is required.")
+					.refine(
+						(val) =>
+							!Number.isNaN(Number.parseFloat(val)) &&
+							Number.parseFloat(val) > 0,
+						{
+							message: "Amount must be a positive number.",
+						},
+					),
+				payer: z.string().min(1, "A payer must be selected."),
 				members: z.array(
 					z.object({
 						_id: z.string(),
@@ -55,15 +65,17 @@ const CreateTransactionForm = () => {
 						phoneNumber: z.string().optional(),
 					}),
 				),
-				selectedMembers: z.array(
-					z.object({
-						_id: z.string(),
-						name: z.string(),
-						image: z.string(),
-						email: z.string().optional(),
-						phoneNumber: z.string().optional(),
-					}),
-				),
+				selectedMembers: z
+					.array(
+						z.object({
+							_id: z.string(),
+							name: z.string(),
+							image: z.string(),
+							email: z.string().optional(),
+							phoneNumber: z.string().optional(),
+						}),
+					)
+					.min(1, "At least one member must be involved in the transaction."),
 			}),
 		},
 		// MARK: onSubmit
@@ -134,6 +146,13 @@ const CreateTransactionForm = () => {
 							value={field.state.value}
 							clearButtonMode="while-editing"
 						/>
+						{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+							<Text className="text-destructive text-sm">
+								{field.state.meta.errors
+									.map((error) => error?.message)
+									.join(", ")}
+							</Text>
+						) : null}
 					</>
 				)}
 			</Form.Field>
@@ -217,6 +236,13 @@ const CreateTransactionForm = () => {
 							value={field.state.value}
 							clearButtonMode="while-editing"
 						/>
+						{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+							<Text className="text-destructive text-sm">
+								{field.state.meta.errors
+									.map((error) => error?.message)
+									.join(", ")}
+							</Text>
+						) : null}
 					</>
 				)}
 			</Form.Field>
@@ -234,6 +260,13 @@ const CreateTransactionForm = () => {
 							clearButtonMode="while-editing"
 							keyboardType="numeric"
 						/>
+						{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+							<Text className="text-destructive text-sm">
+								{field.state.meta.errors
+									.map((error) => error?.message)
+									.join(", ")}
+							</Text>
+						) : null}
 					</>
 				)}
 			</Form.Field>
@@ -241,7 +274,20 @@ const CreateTransactionForm = () => {
 			{/* MARK: Select Member List
 			 */}
 			<View className="flex flex-col gap-4">
-				<Label>Members</Label>
+				<Form.Field name="selectedMembers">
+					{(field) => (
+						<>
+							<Label>Members</Label>
+							{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+								<Text className="mb-2 text-destructive text-sm">
+									{field.state.meta.errors
+										.map((error) => error?.message)
+										.join(", ")}
+								</Text>
+							) : null}
+						</>
+					)}
+				</Form.Field>
 				<Form.Subscribe selector={(state) => state.values.groupId}>
 					{(groupId) => {
 						return (
@@ -373,7 +419,20 @@ const CreateTransactionForm = () => {
 			{/* MARK: Payer
 			 */}
 			<View className="flex flex-col gap-4">
-				<Label>Payer</Label>
+				<Form.Field name="payer">
+					{(field) => (
+						<>
+							<Label>Payer</Label>
+							{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+								<Text className="mb-2 text-destructive text-sm">
+									{field.state.meta.errors
+										.map((error) => error?.message)
+										.join(", ")}
+								</Text>
+							) : null}
+						</>
+					)}
+				</Form.Field>
 				<Form.Subscribe selector={(state) => state.values.selectedMembers}>
 					{(selectedMembers) => {
 						if (selectedMembers.length === 1 && selectedMembers[0]._id === "") {

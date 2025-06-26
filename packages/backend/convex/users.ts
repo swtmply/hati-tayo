@@ -1,6 +1,7 @@
+import { filter } from "convex-helpers/server/filter";
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 
 export const createUser = mutation({
 	args: {
@@ -58,7 +59,7 @@ export const deleteUser = mutation({
 
 		const user = await ctx.db
 			.query("users")
-			.withIndex("by_email", (q) => q.eq("email", identity.email!))
+			.withIndex("by_email", (q) => q.eq("email", identity.email))
 			.unique();
 
 		if (!user) {
@@ -81,7 +82,7 @@ export const deleteUser = mutation({
 			for (const groupId of user.groups) {
 				const group = await ctx.db.get(groupId);
 				if (group) {
-					const updatedMembers = group.members.filter((id) => !id.equals(userId));
+					const updatedMembers = group.members.filter((id) => id !== userId);
 					await ctx.db.patch(groupId, { members: updatedMembers });
 				}
 			}
@@ -101,16 +102,19 @@ export const deleteUser = mutation({
 
 		// A more robust way to check participation
 		const allTransactions = await ctx.db.query("transactions").collect();
-		const transactionsInvolvingUser = allTransactions.filter(tx =>
-			tx.payerId.equals(userId) || tx.participants.some(pId => pId.equals(userId))
+		const transactionsInvolvingUser = allTransactions.filter(
+			(tx) =>
+				tx.payerId === userId || tx.participants.some((pId) => pId === userId),
 		);
 
 		for (const transaction of transactionsInvolvingUser) {
-			if (transaction.payerId.equals(userId)) {
+			if (transaction.payerId === userId) {
 				// User is the payer, delete this transaction and its shares
 				const sharesForThisTransaction = await ctx.db
 					.query("transactionShares")
-					.withIndex("by_transactionId", (q) => q.eq("transactionId", transaction._id))
+					.withIndex("by_transactionId", (q) =>
+						q.eq("transactionId", transaction._id),
+					)
 					.collect();
 				for (const share of sharesForThisTransaction) {
 					await ctx.db.delete(share._id);
@@ -119,7 +123,7 @@ export const deleteUser = mutation({
 			} else {
 				// User is only a participant, remove them from participants list
 				const newParticipants = transaction.participants.filter(
-					(participantId) => !participantId.equals(userId),
+					(participantId) => participantId !== userId,
 				);
 				if (newParticipants.length !== transaction.participants.length) {
 					// This check is important to only patch if there's a change
