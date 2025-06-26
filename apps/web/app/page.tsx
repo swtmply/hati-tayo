@@ -67,7 +67,7 @@ export default function HatiTayoLanding() {
 
 			<main className="flex-1">
 				{/* Hero Section */}
-				<section className="flex w-full flex-col items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 py-12 md:py-24 lg:py-32">
+				<section className="w-full bg-gradient-to-br from-emerald-50 to-teal-50 py-12 md:py-24 lg:py-32">
 					<div className="container px-4 md:px-6">
 						<div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
 							<div className="flex flex-col justify-center space-y-4">
@@ -125,10 +125,7 @@ export default function HatiTayoLanding() {
 				</section>
 
 				{/* Features Section */}
-				<section
-					id="features"
-					className="flex w-full flex-col items-center justify-center py-12 md:py-24 lg:py-32"
-				>
+				<section id="features" className="w-full py-12 md:py-24 lg:py-32">
 					<div className="container px-4 md:px-6">
 						<div className="flex flex-col items-center justify-center space-y-4 text-center">
 							<div className="space-y-2">
@@ -214,7 +211,7 @@ export default function HatiTayoLanding() {
 				{/* How It Works Section */}
 				<section
 					id="how-it-works"
-					className="flex w-full flex-col items-center justify-center bg-gray-50 py-12 md:py-24 lg:py-32"
+					className="w-full bg-gray-50 py-12 md:py-24 lg:py-32"
 				>
 					<div className="container px-4 md:px-6">
 						<div className="flex flex-col items-center justify-center space-y-4 text-center">
@@ -263,11 +260,169 @@ export default function HatiTayoLanding() {
 								</p>
 							</div>
 						</div>
+
+						{/* Account Deletion Section */}
+						<div className="mt-16 border-gray-200 border-t pt-16">
+							<div className="flex flex-col items-center justify-center space-y-4 text-center">
+								<div className="space-y-2">
+									<Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+										Account Management
+									</Badge>
+									<h2 className="font-bold text-3xl tracking-tighter sm:text-4xl">
+										How to Delete Your Account
+									</h2>
+									<p className="max-w-[700px] text-gray-600 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+										Need to delete your Hati Tayo account? Follow these simple
+										steps to permanently remove your account and data.
+									</p>
+								</div>
+							</div>
+
+							<div className="mx-auto grid max-w-4xl items-start gap-8 py-12 lg:grid-cols-2 lg:gap-12">
+								<div className="space-y-6">
+									<div className="flex items-start space-x-4">
+										<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-600 font-bold text-lg text-white">
+											1
+										</div>
+										<div>
+											<h3 className="font-semibold text-lg">
+												Login to the Application
+											</h3>
+											<p className="mt-1 text-gray-600">
+												Open the Hati Tayo app and sign in to your account using
+												your registered email and password.
+											</p>
+										</div>
+									</div>
+
+									<div className="flex items-start space-x-4">
+										<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-600 font-bold text-lg text-white">
+											2
+										</div>
+										<div>
+											<h3 className="font-semibold text-lg">
+												Go to Profile Page
+											</h3>
+											<p className="mt-1 text-gray-600">
+												Navigate to your profile by tapping on the profile icon,
+												usually located in the bottom navigation or menu.
+											</p>
+										</div>
+									</div>
+
+									<div className="flex items-start space-x-4">
+										<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-600 font-bold text-lg text-white">
+											3
+										</div>
+										<div>
+											<h3 className="font-semibold text-lg">
+												Tap on Delete Account
+											</h3>
+											<p className="mt-1 text-gray-600">
+												Scroll down to find the "Delete Account" option in your
+												profile settings and tap on it.
+											</p>
+										</div>
+									</div>
+
+									<div className="flex items-start space-x-4">
+										<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-600 font-bold text-lg text-white">
+											4
+										</div>
+										<div>
+											<h3 className="font-semibold text-lg">
+												Select Delete to Confirm
+											</h3>
+											<p className="mt-1 text-gray-600">
+												Review the deletion warning and tap "Delete" to
+												permanently remove your account and all associated data.
+											</p>
+										</div>
+									</div>
+								</div>
+
+								<div className="flex items-center justify-center">
+									<div className="max-w-sm rounded-xl border-2 border-red-100 bg-white p-6 shadow-lg">
+										<div className="space-y-4 text-center">
+											<div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+												<svg
+													className="h-6 w-6 text-red-600"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke="currentColor"
+												>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														strokeWidth={2}
+														d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+													/>
+												</svg>
+											</div>
+											<h4 className="font-semibold text-gray-900 text-lg">
+												Important Notice
+											</h4>
+											<p className="text-gray-600 text-sm">
+												Deleting your account is permanent and cannot be undone.
+												You will lose access to all your data and transaction
+												history.
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							{/* Important Note */}
+							<div className="mx-auto max-w-4xl">
+								<div className="rounded-lg border border-red-200 bg-red-50 p-6">
+									<div className="flex items-start space-x-3">
+										<div className="flex-shrink-0">
+											<svg
+												className="h-6 w-6 text-red-600"
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke="currentColor"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													strokeWidth={2}
+													d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+												/>
+											</svg>
+										</div>
+										<div>
+											<h4 className="mb-2 font-semibold text-lg text-red-800">
+												⚠️ Data Deletion Warning
+											</h4>
+											<p className="text-red-700">
+												<strong>
+													All transactions paid by you will be permanently
+													deleted
+												</strong>{" "}
+												when you delete your account. This includes your payment
+												history, group memberships, and any bills you've created
+												or participated in. Make sure to settle any outstanding
+												payments and inform your group members before proceeding
+												with account deletion.
+											</p>
+											<p className="mt-2 text-red-700">
+												If you're having issues with the app, consider
+												contacting our support team first at{" "}
+												<Link href="/support" className="font-medium underline">
+													support@hatitayo.com
+												</Link>
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</section>
 
 				{/* Testimonials Section */}
-				<section className="flex w-full flex-col items-center justify-center py-12 md:py-24 lg:py-32">
+				<section className="w-full py-12 md:py-24 lg:py-32">
 					<div className="container px-4 md:px-6">
 						<div className="flex flex-col items-center justify-center space-y-4 text-center">
 							<div className="space-y-2">
@@ -286,7 +441,7 @@ export default function HatiTayoLanding() {
 										<div className="flex">
 											{[...Array(5)].map((_, i) => (
 												<Star
-													key={i}
+													key={_}
 													className="h-4 w-4 fill-yellow-400 text-yellow-400"
 												/>
 											))}
@@ -318,7 +473,7 @@ export default function HatiTayoLanding() {
 										<div className="flex">
 											{[...Array(5)].map((_, i) => (
 												<Star
-													key={i}
+													key={_}
 													className="h-4 w-4 fill-yellow-400 text-yellow-400"
 												/>
 											))}
@@ -350,7 +505,7 @@ export default function HatiTayoLanding() {
 										<div className="flex">
 											{[...Array(5)].map((_, i) => (
 												<Star
-													key={i}
+													key={_}
 													className="h-4 w-4 fill-yellow-400 text-yellow-400"
 												/>
 											))}
@@ -380,7 +535,7 @@ export default function HatiTayoLanding() {
 				</section>
 
 				{/* CTA Section */}
-				<section className="flex w-full flex-col items-center justify-center bg-emerald-600 py-12 md:py-24 lg:py-32">
+				<section className="w-full bg-emerald-600 py-12 md:py-24 lg:py-32">
 					<div className="container px-4 md:px-6">
 						<div className="flex flex-col items-center justify-center space-y-4 text-center">
 							<div className="space-y-2">
@@ -416,7 +571,7 @@ export default function HatiTayoLanding() {
 				</section>
 
 				{/* Newsletter Section */}
-				<section className="flex w-full flex-col items-center justify-center border-t py-12 md:py-24 lg:py-32">
+				<section className="w-full border-t py-12 md:py-24 lg:py-32">
 					<div className="container px-4 md:px-6">
 						<div className="flex flex-col items-center justify-center space-y-4 text-center">
 							<div className="space-y-2">
