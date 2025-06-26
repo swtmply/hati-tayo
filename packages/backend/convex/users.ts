@@ -106,19 +106,28 @@ export const deleteUser = mutation({
 		);
 
 		for (const transaction of transactionsInvolvingUser) {
-			const newParticipants = transaction.participants.filter(
-				(participantId) => !participantId.equals(userId),
-			);
-			if (newParticipants.length !== transaction.participants.length) {
-				await ctx.db.patch(transaction._id, {
-					participants: newParticipants,
-				});
+			if (transaction.payerId.equals(userId)) {
+				// User is the payer, delete this transaction and its shares
+				const sharesForThisTransaction = await ctx.db
+					.query("transactionShares")
+					.withIndex("by_transactionId", (q) => q.eq("transactionId", transaction._id))
+					.collect();
+				for (const share of sharesForThisTransaction) {
+					await ctx.db.delete(share._id);
+				}
+				await ctx.db.delete(transaction._id);
+			} else {
+				// User is only a participant, remove them from participants list
+				const newParticipants = transaction.participants.filter(
+					(participantId) => !participantId.equals(userId),
+				);
+				if (newParticipants.length !== transaction.participants.length) {
+					// This check is important to only patch if there's a change
+					await ctx.db.patch(transaction._id, {
+						participants: newParticipants,
+					});
+				}
 			}
-			// If payerId is the user, we are currently leaving it as is.
-			// If specific handling is needed like setting to null, it would be:
-			// if (transaction.payerId.equals(userId)) {
-			//  await ctx.db.patch(transaction._id, { payerId: null }); // Requires schema change for payerId to be v.optional(v.id("users"))
-			// }
 		}
 
 		// 4. Delete the user document
