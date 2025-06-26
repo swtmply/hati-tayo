@@ -106,7 +106,7 @@ const ProfilePage = () => {
 			</Text>
 
 			<View className="gap-0.5 rounded-lg bg-card shadow">
-				<View className="flex-row items-center justify-between border-border px-4 py-2">
+				<View className="flex-row items-center justify-between border-border border-b px-4 py-2">
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Password
 					</Text>
@@ -115,16 +115,9 @@ const ProfilePage = () => {
 						<ChevronRight className="text-muted-foreground" />
 					</View>
 				</View>
-			</View>
-
-			<Text className="py-2 font-geist-semibold text-destructive text-sm uppercase">
-				Danger Zone
-			</Text>
-
-			<View className="gap-0.5 rounded-lg bg-card shadow">
 				<Pressable
 					onPress={logout}
-					className="flex-row items-center justify-between border-border border-b px-4 py-2"
+					className="flex-row items-center justify-between border-border px-4 py-2"
 				>
 					<Text className="font-geist-medium text-destructive text-lg">
 						Logout
@@ -148,8 +141,9 @@ const ProfilePage = () => {
 						<DialogHeader>
 							<DialogTitle>Delete Account?</DialogTitle>
 							<DialogDescription>
-								Are you sure you want to delete your account? This action cannot
-								be undone and all your data will be permanently removed.
+								Are you sure you want to delete your account? This action
+								cannot be undone and all your data will be permanently
+								removed.
 							</DialogDescription>
 						</DialogHeader>
 						<DialogFooter className="gap-2 sm:justify-between">
