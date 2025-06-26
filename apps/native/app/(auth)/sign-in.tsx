@@ -9,6 +9,17 @@ import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { useAppForm } from "~/hooks/useAppForm";
 
+interface SignInError extends Error {
+	errors: {
+		code: string;
+		message: string;
+		longMessage: string;
+		meta: {
+			paramName: string;
+		};
+	}[];
+}
+
 const SignInPage = () => {
 	const { signIn, setActive, isLoaded } = useSignIn();
 	const router = useRouter();
@@ -19,8 +30,8 @@ const SignInPage = () => {
 		},
 		validators: {
 			onChange: z.object({
-				email: z.string().email(),
-				password: z.string().min(1),
+				email: z.string().email({ message: "Invalid email" }),
+				password: z.string().min(1, { message: "Password is required" }),
 			}),
 		},
 		onSubmit: async ({ value }) => {
@@ -44,9 +55,27 @@ const SignInPage = () => {
 					// complete further steps.
 					console.error(JSON.stringify(signInAttempt, null, 2));
 				}
-			} catch (err) {
+			} catch (err: unknown) {
 				// See https://clerk.com/docs/custom-flows/error-handling
 				// for more info on error handling
+				form.setErrorMap({
+					onChange: {
+						fields: {
+							email: {
+								message:
+									(err as SignInError).errors[0].code ===
+									"form_identifier_not_found"
+										? "Account not found"
+										: (err as SignInError).errors[0].message,
+							},
+							password: {
+								message:
+									(err as SignInError).errors[0].code ===
+										"form_password_incorrect" && "Incorrect password",
+							},
+						},
+					},
+				});
 				console.error(JSON.stringify(err, null, 2));
 			}
 		},
@@ -70,9 +99,12 @@ const SignInPage = () => {
 									clearButtonMode="while-editing"
 									className="native:h-14 rounded-full px-4"
 								/>
-								{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
-									<Text className="text-sm text-destructive">
-										{field.state.meta.errors.join(", ")}
+								{field.state.meta.errors &&
+								field.state.meta.errors.length > 0 ? (
+									<Text className="text-destructive text-sm">
+										{field.state.meta.errors
+											.map((error) => error?.message)
+											.join(", ")}
 									</Text>
 								) : null}
 							</View>
@@ -90,9 +122,12 @@ const SignInPage = () => {
 									className="native:h-14 rounded-full px-4"
 									secureTextEntry
 								/>
-								{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
-									<Text className="text-sm text-destructive">
-										{field.state.meta.errors.join(", ")}
+								{field.state.meta.errors &&
+								field.state.meta.errors.length > 0 ? (
+									<Text className="text-destructive text-sm">
+										{field.state.meta.errors
+											.map((error) => error?.message)
+											.join(", ")}
 									</Text>
 								) : null}
 							</View>
