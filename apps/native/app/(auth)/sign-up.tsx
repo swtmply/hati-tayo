@@ -1,4 +1,4 @@
-import { useSignUp } from "@clerk/clerk-expo";
+import { useAuth, useSignUp } from "@clerk/clerk-expo";
 import { api } from "@hati-tayo/backend/convex/_generated/api";
 import { useMutation } from "convex/react";
 import { Link, useRouter } from "expo-router";
@@ -12,7 +12,8 @@ import { Text } from "~/components/ui/text";
 import { useAppForm } from "~/hooks/useAppForm";
 
 const SignUpPage = () => {
-	const { isLoaded, signUp, setActive } = useSignUp();
+	const { isLoaded, signUp } = useSignUp(); // Removed setActive as it's not used
+	const { signOut } = useAuth();
 	const router = useRouter();
 
 	const createUser = useMutation(api.users.createUser);
@@ -76,7 +77,8 @@ const SignUpPage = () => {
 					email: form.getFieldValue("email"),
 					name: form.getFieldValue("name"),
 				});
-
+				// Ensure any implicit session/state from sign-up is cleared
+				await signOut();
 				router.push("/sign-in");
 			} else {
 				// If the status is not complete, check why. User may need to
