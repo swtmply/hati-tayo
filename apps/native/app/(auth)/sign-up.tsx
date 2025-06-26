@@ -1,4 +1,4 @@
-import { useSignUp } from "@clerk/clerk-expo";
+import { useAuth, useSignUp } from "@clerk/clerk-expo";
 import { api } from "@hati-tayo/backend/convex/_generated/api";
 import { useMutation } from "convex/react";
 import { Link, useRouter } from "expo-router";
@@ -12,7 +12,8 @@ import { Text } from "~/components/ui/text";
 import { useAppForm } from "~/hooks/useAppForm";
 
 const SignUpPage = () => {
-	const { isLoaded, signUp, setActive } = useSignUp();
+	const { isLoaded, signUp } = useSignUp(); // Removed setActive as it's not used
+	const { signOut } = useAuth();
 	const router = useRouter();
 
 	const createUser = useMutation(api.users.createUser);
@@ -76,7 +77,8 @@ const SignUpPage = () => {
 					email: form.getFieldValue("email"),
 					name: form.getFieldValue("name"),
 				});
-
+				// Ensure any implicit session/state from sign-up is cleared
+				await signOut();
 				router.push("/sign-in");
 			} else {
 				// If the status is not complete, check why. User may need to
@@ -137,6 +139,11 @@ const SignUpPage = () => {
 									clearButtonMode="while-editing"
 									className="native:h-14 rounded-full px-4"
 								/>
+								{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+									<Text className="text-sm text-destructive">
+										{field.state.meta.errors.join(", ")}
+									</Text>
+								) : null}
 							</View>
 						)}
 					</form.Field>
@@ -151,6 +158,11 @@ const SignUpPage = () => {
 									clearButtonMode="while-editing"
 									className="native:h-14 rounded-full px-4"
 								/>
+								{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+									<Text className="text-sm text-destructive">
+										{field.state.meta.errors.join(", ")}
+									</Text>
+								) : null}
 							</View>
 						)}
 					</form.Field>
@@ -166,6 +178,11 @@ const SignUpPage = () => {
 									className="native:h-14 rounded-full px-4"
 									secureTextEntry
 								/>
+								{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+									<Text className="text-sm text-destructive">
+										{field.state.meta.errors.join(", ")}
+									</Text>
+								) : null}
 							</View>
 						)}
 					</form.Field>

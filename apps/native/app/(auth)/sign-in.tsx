@@ -70,6 +70,11 @@ const SignInPage = () => {
 									clearButtonMode="while-editing"
 									className="native:h-14 rounded-full px-4"
 								/>
+								{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+									<Text className="text-sm text-destructive">
+										{field.state.meta.errors.join(", ")}
+									</Text>
+								) : null}
 							</View>
 						)}
 					</form.Field>
@@ -85,6 +90,11 @@ const SignInPage = () => {
 									className="native:h-14 rounded-full px-4"
 									secureTextEntry
 								/>
+								{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+									<Text className="text-sm text-destructive">
+										{field.state.meta.errors.join(", ")}
+									</Text>
+								) : null}
 							</View>
 						)}
 					</form.Field>
