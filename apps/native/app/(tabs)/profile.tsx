@@ -22,14 +22,14 @@ import { Text } from "~/components/ui/text";
 
 const ProfilePage = () => {
 	const user = useQuery(api.auth.get);
-	const { signOut } = useAuth();
+	const { signOut, userId } = useAuth();
 	const [isDeleteDialogVisible, setDeleteDialogVisible] = useState(false);
 	const deleteUserMutation = useMutation(api.users.deleteUser);
 	const [isDeleting, setIsDeleting] = useState(false);
 
 	const logout = () => {
 		signOut();
-		router.replace("/");
+		router.replace("/(auth)/sign-in");
 	};
 
 	const handleDeleteAccountPress = () => {
@@ -40,18 +40,20 @@ const ProfilePage = () => {
 		if (isDeleting) return;
 		setIsDeleting(true);
 		try {
-			await deleteUserMutation();
-			// Post-deletion actions will be handled in the next step
-			console.log("Account deletion successful via mutation");
-			setDeleteDialogVisible(false);
-			// For now, just logging out and redirecting.
-			// This will be refined in the "Handle post-deletion" step.
 			signOut();
-			router.replace("/");
+
+			await deleteUserMutation();
+
+			await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+				method: "DELETE",
+				headers: {
+					Authorization: `Bearer ${process.env.EXPO_PUBLIC_CLERK_SECRET_KEY}`,
+				},
+			});
+
+			router.replace("/(auth)/sign-in");
 		} catch (error) {
 			console.error("Failed to delete account:", error);
-			// Optionally, show an error message to the user
-			alert("Failed to delete account. Please try again.");
 		} finally {
 			setIsDeleting(false);
 		}

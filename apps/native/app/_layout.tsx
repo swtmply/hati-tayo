@@ -111,7 +111,7 @@ export default function RootLayout() {
 								headerShown: false,
 								animation: "ios_from_right",
 							}}
-							initialRouteName="(auth)"
+							initialRouteName="(tabs)"
 						>
 							<Stack.Screen name="(tabs)" />
 							<Stack.Screen name="(auth)" />
