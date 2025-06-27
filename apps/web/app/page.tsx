@@ -23,9 +23,9 @@ import { Input } from "~/components/ui/input";
 
 export default function HatiTayoLanding() {
 	return (
-		<div className="flex min-h-screen flex-col">
+		<div className="flex min-h-screen flex-col items-center justify-center">
 			{/* Header */}
-			<header className="flex h-16 items-center border-b px-4 lg:px-6">
+			<header className="flex h-16 w-full items-center border-b px-4 lg:px-6">
 				<Link href="/" className="flex items-center justify-center">
 					<Calculator className="h-8 w-8 text-emerald-600" />
 					<span className="ml-2 font-bold text-2xl text-gray-900">
@@ -613,7 +613,7 @@ export default function HatiTayoLanding() {
 			</main>
 
 			{/* Footer */}
-			<footer className="flex w-full shrink-0 flex-col items-center gap-2 border-t px-4 py-6 sm:flex-row md:px-6">
+			<footer className="flex w-full shrink-0 flex-col items-center gap-2 border-t px-4 py-6 sm:flex-row md:px-6 ">
 				<div className="flex items-center gap-2">
 					<Calculator className="h-6 w-6 text-emerald-600" />
 					<span className="font-bold text-gray-900 text-lg">Hati Tayo</span>
