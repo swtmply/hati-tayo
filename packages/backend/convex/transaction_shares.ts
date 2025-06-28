@@ -1,19 +1,18 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getUserByEmail } from "./users";
 
 export const getTransactionSummary = query({
 	args: {},
 	handler: async (ctx) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (identity === null) {
-			throw new Error("Unauthorized");
-		}
-
-		const user = await getUserByEmail(ctx, identity.email ?? "");
+		const userId = await getAuthUserId(ctx);
+		const user = userId !== null ? await ctx.db.get(userId) : null;
 
 		if (user === null) {
-			throw new Error("User not found");
+			return {
+				totalOwed: 0,
+				totalPaid: 0,
+			};
 		}
 
 		let totalOwed = 0;

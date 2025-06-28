@@ -1,5 +1,4 @@
-import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
-import { tokenCache } from "@clerk/clerk-expo/token-cache";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import {
 	Geist_400Regular,
 	Geist_500Medium,
@@ -18,8 +17,8 @@ import {
 } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
 import { ConvexReactClient } from "convex/react";
-import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Stack } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { remapProps } from "nativewind";
@@ -65,6 +64,12 @@ const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL ?? "", {
 	unsavedChangesWarning: false,
 });
 
+const secureStorage = {
+	getItem: SecureStore.getItemAsync,
+	setItem: SecureStore.setItemAsync,
+	removeItem: SecureStore.deleteItemAsync,
+};
+
 export default function RootLayout() {
 	const hasMounted = useRef(false);
 	const { colorScheme, isDarkColorScheme } = useColorScheme();
@@ -98,31 +103,33 @@ export default function RootLayout() {
 	}
 
 	return (
-		<ClerkProvider
-			tokenCache={tokenCache}
-			publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
+		<ConvexAuthProvider
+			client={convex}
+			storage={
+				Platform.OS === "android" || Platform.OS === "ios"
+					? secureStorage
+					: undefined
+			}
 		>
-			<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-				<ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-					<StatusBar style={isDarkColorScheme ? "light" : "dark"} />
-					<GestureHandlerRootView style={{ flex: 1 }}>
-						<Stack
-							screenOptions={{
-								headerShown: false,
-								animation: "ios_from_right",
-							}}
-							initialRouteName="(tabs)"
-						>
-							<Stack.Screen name="(tabs)" />
-							<Stack.Screen name="(auth)" />
-							<Stack.Screen name="(screens)/create-transaction" />
-							<Stack.Screen name="(screens)/transaction/[transactionId]" />
-						</Stack>
-					</GestureHandlerRootView>
-					<PortalHost />
-				</ThemeProvider>
-			</ConvexProviderWithClerk>
-		</ClerkProvider>
+			<ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+				<StatusBar style={isDarkColorScheme ? "light" : "dark"} />
+				<GestureHandlerRootView style={{ flex: 1 }}>
+					<Stack
+						screenOptions={{
+							headerShown: false,
+							animation: "ios_from_right",
+						}}
+						initialRouteName="(tabs)"
+					>
+						<Stack.Screen name="(tabs)" />
+						<Stack.Screen name="(auth)" />
+						<Stack.Screen name="(screens)/create-transaction" />
+						<Stack.Screen name="(screens)/transaction/[transactionId]" />
+					</Stack>
+				</GestureHandlerRootView>
+				<PortalHost />
+			</ThemeProvider>
+		</ConvexAuthProvider>
 	);
 }
 

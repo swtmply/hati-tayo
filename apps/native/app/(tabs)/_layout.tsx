@@ -1,5 +1,6 @@
-import { useAuth } from "@clerk/clerk-expo";
+import { api } from "@hati-tayo/backend/convex/_generated/api";
 import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
+import { useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
 import { Redirect, Tabs } from "expo-router";
 import { Home, User2, Users2 } from "lucide-react-native";
@@ -7,7 +8,7 @@ import { Pressable, StyleSheet } from "react-native";
 import { useColorScheme } from "~/lib/use-color-scheme";
 
 export default function TabLayout() {
-	const { isSignedIn } = useAuth();
+	const isSignedIn = useQuery(api.auth.isAuthenticated);
 	const { colorScheme } = useColorScheme();
 
 	if (!isSignedIn) {

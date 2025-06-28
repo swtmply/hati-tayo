@@ -25,7 +25,7 @@ const CreateTransactionForm = () => {
 	const [openFormSheet, setOpenFormSheet] = React.useState<number>(-1);
 
 	const groups = useQuery(api.groups.groupsOfCurrentUserWithMembers);
-	const user = useQuery(api.auth.get);
+	const user = useQuery(api.users.get);
 	const createTransaction = useMutation(api.transactions.createTransaction);
 
 	// MARK: Form

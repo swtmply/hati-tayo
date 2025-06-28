@@ -1,4 +1,4 @@
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@hati-tayo/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
@@ -21,8 +21,8 @@ import { ChevronRight } from "~/components/ui/icons";
 import { Text } from "~/components/ui/text";
 
 const ProfilePage = () => {
-	const user = useQuery(api.auth.get);
-	const { signOut, userId } = useAuth();
+	const user = useQuery(api.users.get);
+	const { signOut } = useAuthActions();
 	const [isDeleteDialogVisible, setDeleteDialogVisible] = useState(false);
 	const deleteUserMutation = useMutation(api.users.deleteUser);
 	const [isDeleting, setIsDeleting] = useState(false);
@@ -44,7 +44,7 @@ const ProfilePage = () => {
 
 			await deleteUserMutation();
 
-			await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+			await fetch(`https://api.clerk.com/v1/users/${user?._id}`, {
 				method: "DELETE",
 				headers: {
 					Authorization: `Bearer ${process.env.EXPO_PUBLIC_CLERK_SECRET_KEY}`,
