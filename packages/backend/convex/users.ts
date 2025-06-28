@@ -127,11 +127,6 @@ export const deleteUser = mutation({
 		// 4. Delete the user document
 		await ctx.db.delete(user._id);
 
-		// Note: This function does not interact with Clerk's user database.
-		// Clerk user deletion might need to be handled separately if you want to remove them from Clerk's system.
-		// For instance, by calling Clerk's Backend API from here or on the client-side.
-		// For now, this only deletes the user from the Convex database.
-
 		return { success: true, userId };
 	},
 });

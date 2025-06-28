@@ -44,13 +44,6 @@ const ProfilePage = () => {
 
 			await deleteUserMutation();
 
-			await fetch(`https://api.clerk.com/v1/users/${user?._id}`, {
-				method: "DELETE",
-				headers: {
-					Authorization: `Bearer ${process.env.EXPO_PUBLIC_CLERK_SECRET_KEY}`,
-				},
-			});
-
 			router.replace("/(auth)/sign-in");
 		} catch (error) {
 			console.error("Failed to delete account:", error);

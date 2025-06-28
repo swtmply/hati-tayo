@@ -10,7 +10,6 @@
 		"web": "expo start --web"
 	},
 	"dependencies": {
-		"@clerk/clerk-expo": "^2.13.1",
 		"@expo-google-fonts/geist": "^0.4.0",
 		"@expo/vector-icons": "^14.0.4",
 		"@gorhom/bottom-sheet": "^5.1.6",
