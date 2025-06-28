@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { filter } from "convex-helpers/server/filter";
 import { v } from "convex/values";
 import type { QueryCtx } from "./_generated/server";
@@ -13,8 +14,6 @@ export const createUser = mutation({
 			name: args.name,
 			email: args.email,
 			image: `https://ui-avatars.com/api/?background=random&name=${args.name.replace(" ", "+")}`,
-			groups: [],
-			transactions: [],
 			createdAt: Date.now(),
 			updatedAt: Date.now(),
 		});
@@ -28,16 +27,18 @@ export const searchUser = query({
 		query: v.string(),
 	},
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (identity === null) {
-			throw new Error("Unauthorized");
+		const userId = await getAuthUserId(ctx);
+		const authUser = userId !== null ? await ctx.db.get(userId) : null;
+
+		if (authUser === null) {
+			return null;
 		}
 
 		return await filter(
 			ctx.db
 				.query("users")
 				.withSearchIndex("search_email", (q) => q.search("email", args.query)),
-			(user) => user.email !== identity.email,
+			(user) => user.email !== authUser.email,
 		).collect();
 	},
 });
@@ -52,40 +53,29 @@ export const getUserByEmail = async (ctx: QueryCtx, email: string) => {
 export const deleteUser = mutation({
 	args: {}, // No arguments needed, user is derived from session
 	handler: async (ctx) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) {
-			throw new Error("Unauthorized: No user is signed in.");
+		const userId = await getAuthUserId(ctx);
+		const user = userId !== null ? await ctx.db.get(userId) : null;
+
+		if (user === null) {
+			return null;
 		}
-
-		const user = await ctx.db
-			.query("users")
-			.withIndex("by_email", (q) => q.eq("email", identity.email))
-			.unique();
-
-		if (!user) {
-			throw new Error("User not found.");
-		}
-
-		const userId = user._id;
 
 		// 1. Delete transactionShares for the user
 		const shares = await ctx.db
 			.query("transactionShares")
-			.withIndex("by_userId", (q) => q.eq("userId", userId))
+			.withIndex("by_userId", (q) => q.eq("userId", user._id))
 			.collect();
 		for (const share of shares) {
 			await ctx.db.delete(share._id);
 		}
 
-		// 2. Remove user from groups
-		if (user.groups && user.groups.length > 0) {
-			for (const groupId of user.groups) {
-				const group = await ctx.db.get(groupId);
-				if (group) {
-					const updatedMembers = group.members.filter((id) => id !== userId);
-					await ctx.db.patch(groupId, { members: updatedMembers });
-				}
-			}
+		// 2, Delete auth accounts
+		const authAccounts = await ctx.db
+			.query("authAccounts")
+			.filter((q) => q.eq(q.field("userId"), user._id))
+			.collect();
+		for (const authAccount of authAccounts) {
+			await ctx.db.delete(authAccount._id);
 		}
 
 		// 3. Remove user from transaction participants
@@ -135,13 +125,16 @@ export const deleteUser = mutation({
 		}
 
 		// 4. Delete the user document
-		await ctx.db.delete(userId);
-
-		// Note: This function does not interact with Clerk's user database.
-		// Clerk user deletion might need to be handled separately if you want to remove them from Clerk's system.
-		// For instance, by calling Clerk's Backend API from here or on the client-side.
-		// For now, this only deletes the user from the Convex database.
+		await ctx.db.delete(user._id);
 
 		return { success: true, userId };
+	},
+});
+
+export const get = query({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await getAuthUserId(ctx);
+		return userId !== null ? ctx.db.get(userId) : null;
 	},
 });

@@ -12,7 +12,9 @@
 		"typescript": "^5.8.3"
 	},
 	"dependencies": {
+		"@convex-dev/auth": "^0.0.87",
 		"convex": "^1.23.0",
-		"convex-helpers": "^0.1.94"
+		"convex-helpers": "^0.1.94",
+		"jose": "^6.0.11"
 	}
 }

@@ -1,4 +1,5 @@
-import { useSignIn } from "@clerk/clerk-expo";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { ConvexError } from "convex/values";
 import { Link, useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -9,19 +10,8 @@ import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { useAppForm } from "~/hooks/useAppForm";
 
-interface SignInError extends Error {
-	errors: {
-		code: string;
-		message: string;
-		longMessage: string;
-		meta: {
-			paramName: string;
-		};
-	}[];
-}
-
 const SignInPage = () => {
-	const { signIn, setActive, isLoaded } = useSignIn();
+	const { signIn } = useAuthActions();
 	const router = useRouter();
 	const form = useAppForm({
 		defaultValues: {
@@ -35,48 +25,28 @@ const SignInPage = () => {
 			}),
 		},
 		onSubmit: async ({ value }) => {
-			if (!isLoaded) return;
-
 			// Start the sign-in process using the email and password provided
 			try {
-				const signInAttempt = await signIn.create({
-					identifier: value.email,
+				await signIn("password", {
+					email: value.email,
 					password: value.password,
+					redirectTo: "/(tabs)",
+					flow: "signIn",
 				});
+			} catch (error) {
+				console.error(error);
 
-				// If sign-in process is complete, set the created session as active
-				// and redirect the user
-
-				if (signInAttempt.status === "complete") {
-					await setActive({ session: signInAttempt.createdSessionId });
-					router.replace("/(tabs)");
-				} else {
-					// If the status isn't complete, check why. User might need to
-					// complete further steps.
-					console.error(JSON.stringify(signInAttempt, null, 2));
-				}
-			} catch (err: unknown) {
-				// See https://clerk.com/docs/custom-flows/error-handling
-				// for more info on error handling
-				form.setErrorMap({
-					onChange: {
-						fields: {
-							email: {
-								message:
-									(err as SignInError).errors[0].code ===
-									"form_identifier_not_found"
-										? "Account not found"
-										: (err as SignInError).errors[0].message,
-							},
-							password: {
-								message:
-									(err as SignInError).errors[0].code ===
-										"form_password_incorrect" && "Incorrect password",
+				if (error instanceof ConvexError && error.data === "INVALID_PASSWORD") {
+					form.setErrorMap({
+						onChange: {
+							fields: {
+								password: {
+									message: "Invalid password",
+								},
 							},
 						},
-					},
-				});
-				console.error(JSON.stringify(err, null, 2));
+					});
+				}
 			}
 		},
 	});

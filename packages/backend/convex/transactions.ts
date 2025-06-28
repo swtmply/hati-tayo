@@ -1,20 +1,16 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
-import { getUserByEmail } from "./users";
 
 export const transactionsOfCurrentUser = query({
 	args: {},
 	handler: async (ctx) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (identity === null) {
-			throw new Error("Unauthorized");
-		}
-
-		const user = await getUserByEmail(ctx, identity.email ?? "");
+		const userId = await getAuthUserId(ctx);
+		const user = userId !== null ? await ctx.db.get(userId) : null;
 
 		if (user === null) {
-			throw new Error("User not found");
+			return [];
 		}
 
 		const transactions = [];
@@ -74,21 +70,17 @@ export const getTransactionDetailsById = query({
 		id: v.id("transactions"),
 	},
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (identity === null) {
-			throw new Error("Unathorized");
-		}
-
-		const user = await getUserByEmail(ctx, identity.email ?? "");
-		let totalOwed = 0;
+		const userId = await getAuthUserId(ctx);
+		const user = userId !== null ? await ctx.db.get(userId) : null;
 
 		if (user === null) {
-			throw new Error("User not found");
+			return null;
 		}
+		let totalOwed = 0;
 
 		const transaction = await ctx.db.get(args.id);
 		if (transaction === null) {
-			throw new Error("Transaction not found");
+			return null;
 		}
 
 		const payer = await ctx.db.get(transaction.payerId);
@@ -119,7 +111,7 @@ export const getTransactionDetailsById = query({
 		}
 
 		if (payer === null) {
-			throw new Error("Payer not found");
+			return null;
 		}
 
 		return {
@@ -151,15 +143,11 @@ export const createTransaction = mutation({
 		payerId: v.string(),
 	},
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (identity === null) {
-			throw new Error("Unauthorized");
-		}
-
-		const user = await getUserByEmail(ctx, identity.email ?? "");
+		const userId = await getAuthUserId(ctx);
+		const user = userId !== null ? await ctx.db.get(userId) : null;
 
 		if (user === null) {
-			throw new Error("User not found");
+			return null;
 		}
 
 		const participantsIds = [] as Id<"users">[];
@@ -175,8 +163,6 @@ export const createTransaction = mutation({
 					name: participant.name,
 					email: participant.email,
 					image: `https://ui-avatars.com/api/?background=random&name=${participant.name.replace(" ", "+")}`,
-					groups: [],
-					transactions: [],
 					phoneNumber: participant.phoneNumber,
 					createdAt: Date.now(),
 					updatedAt: Date.now(),
@@ -196,14 +182,14 @@ export const createTransaction = mutation({
 			}
 		}
 
-		// Create group if it doesn't exist
 		if (args.groupId === undefined) {
+			// Create group if it doesn't exist
 			if (args.groupName === undefined) {
-				throw new Error("Cannot create transaction without group name");
+				return null;
 			}
 
 			if (args.groupName === "") {
-				throw new Error("Group name is required");
+				return null;
 			}
 
 			// Create group

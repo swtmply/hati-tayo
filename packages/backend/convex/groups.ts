@@ -1,19 +1,15 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getUserByEmail } from "./users";
 
 export const groupsOfCurrentUser = query({
 	args: {},
 	handler: async (ctx) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (identity === null) {
-			throw new Error("Unauthorized");
-		}
-
-		const user = await getUserByEmail(ctx, identity.email ?? "");
+		const userId = await getAuthUserId(ctx);
+		const user = userId !== null ? await ctx.db.get(userId) : null;
 
 		if (user === null) {
-			throw new Error("User not found");
+			return [];
 		}
 
 		const groups = [];
@@ -78,19 +74,16 @@ export const getGroupDetailsById = query({
 		id: v.id("groups"),
 	},
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (identity === null) {
-			throw new Error("Unathorized");
-		}
+		const userId = await getAuthUserId(ctx);
+		const user = userId !== null ? await ctx.db.get(userId) : null;
 
-		const user = await getUserByEmail(ctx, identity.email ?? "");
 		if (user === null) {
-			throw new Error("User not found");
+			return null;
 		}
 
 		const group = await ctx.db.get(args.id);
 		if (group === null) {
-			throw new Error("Group not found");
+			return null;
 		}
 
 		const transactions = [];
@@ -150,15 +143,11 @@ export const getGroupDetailsById = query({
 export const groupsOfCurrentUserWithMembers = query({
 	args: {},
 	handler: async (ctx) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (identity === null) {
-			throw new Error("Unauthorized");
-		}
-
-		const user = await getUserByEmail(ctx, identity.email ?? "");
+		const userId = await getAuthUserId(ctx);
+		const user = userId !== null ? await ctx.db.get(userId) : null;
 
 		if (user === null) {
-			throw new Error("User not found");
+			return [];
 		}
 
 		const groups = [];
@@ -192,15 +181,11 @@ export const createGroup = mutation({
 		members: v.array(v.id("users")),
 	},
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (identity === null) {
-			throw new Error("Unauthorized");
-		}
-
-		const user = await getUserByEmail(ctx, identity.email ?? "");
+		const userId = await getAuthUserId(ctx);
+		const user = userId !== null ? await ctx.db.get(userId) : null;
 
 		if (user === null) {
-			throw new Error("User not found");
+			return null;
 		}
 
 		const group = await ctx.db.insert("groups", {

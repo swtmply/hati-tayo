@@ -174,16 +174,6 @@ const AddAnonymousMemberDialog = ({
 					</DialogDescription>
 				</DialogHeader>
 
-				<Label>Email</Label>
-				<Input placeholder="Email" onChangeText={setUserEmail} />
-
-				<Label>Phone Number</Label>
-				<Input
-					placeholder="Phone Number"
-					onChangeText={setUserPhoneNumber}
-					keyboardType="numeric"
-				/>
-
 				<Label>Name</Label>
 				<Input placeholder="Name" onChangeText={setUserName} />
 
