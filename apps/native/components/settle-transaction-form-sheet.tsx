@@ -116,7 +116,7 @@ const SettleTransactionFormSheet = ({
 							<Avatar alt={member.name}>
 								<AvatarImage source={{ uri: member.image }} />
 							</Avatar>
-							<Text>{member.name}</Text>
+							<Text className="font-geist-semibold">{member.name}</Text>
 						</View>
 						<CircleCheck
 							className={cn(

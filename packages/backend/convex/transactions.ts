@@ -29,6 +29,24 @@ export const transactionsOfCurrentUser = query({
 					.filter((q) => q.eq(q.field("userId"), user._id))
 					.unique();
 
+				if (payer?._id === user._id && share !== null) {
+					// get the total amount of pending shares
+					const pendingShares = await ctx.db
+						.query("transactionShares")
+						.withIndex("by_transactionId", (q) =>
+							q.eq("transactionId", transaction._id),
+						)
+						.filter((q) => q.eq(q.field("status"), "PENDING"))
+						.collect();
+
+					share.amount = pendingShares.reduce(
+						(acc, share) => acc + share.amount,
+						0,
+					);
+				}
+
+				const group = await ctx.db.get(transaction.groupId);
+
 				for await (const memberId of transaction.participants) {
 					const member = await ctx.db.get(memberId);
 					if (member === null) {
@@ -57,6 +75,7 @@ export const transactionsOfCurrentUser = query({
 					participants: members,
 					share,
 					isSettled: members.every((member) => member.share?.status === "PAID"),
+					group,
 				});
 			}
 		}
@@ -85,7 +104,7 @@ export const getTransactionDetailsById = query({
 
 		const payer = await ctx.db.get(transaction.payerId);
 		const group = await ctx.db.get(transaction.groupId);
-		const members = [];
+		const participants = [];
 
 		for await (const memberId of transaction.participants) {
 			const member = await ctx.db.get(memberId);
@@ -104,7 +123,7 @@ export const getTransactionDetailsById = query({
 				totalOwed += share?.amount ?? 0;
 			}
 
-			members.push({
+			participants.push({
 				...member,
 				share,
 			});
@@ -118,9 +137,11 @@ export const getTransactionDetailsById = query({
 			...transaction,
 			payer,
 			group,
-			participants: members,
+			participants,
 			totalOwed,
-			isSettled: members.every((member) => member.share?.status === "PAID"),
+			isSettled: participants.every(
+				(participant) => participant.share?.status === "PAID",
+			),
 		};
 	},
 });

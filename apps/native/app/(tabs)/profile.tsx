@@ -54,7 +54,7 @@ const ProfilePage = () => {
 
 	return (
 		<Container>
-			<Text className="mb-2 font-geist-bold text-3xl text-foreground">
+			<Text className="mb-2 font-geist-bold text-3xl text-foreground tracking-tighter">
 				Profile
 			</Text>
 
@@ -75,7 +75,7 @@ const ProfilePage = () => {
 				Personal Information
 			</Text>
 
-			<View className="gap-0.5 rounded-lg bg-card shadow">
+			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar">
 				<View className="flex-row items-center justify-between border-border border-b px-4 py-2">
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Name
@@ -100,7 +100,7 @@ const ProfilePage = () => {
 				Account Settings
 			</Text>
 
-			<View className="gap-0.5 rounded-lg bg-card shadow">
+			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar">
 				<View className="flex-row items-center justify-between border-border px-4 py-2">
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Password
@@ -116,15 +116,7 @@ const ProfilePage = () => {
 				Danger Zone
 			</Text>
 
-			<View className="gap-0.5 rounded-lg bg-card shadow">
-				<Pressable
-					onPress={logout}
-					className="flex-row items-center justify-between border-border border-b px-4 py-2"
-				>
-					<Text className="font-geist-medium text-destructive text-lg">
-						Logout
-					</Text>
-				</Pressable>
+			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar">
 				<Dialog
 					open={isDeleteDialogVisible}
 					onOpenChange={setDeleteDialogVisible}
@@ -132,9 +124,9 @@ const ProfilePage = () => {
 					<DialogTrigger asChild>
 						<Pressable
 							onPress={handleDeleteAccountPress}
-							className="flex-row items-center justify-between border-border px-4 py-2"
+							className="flex-row items-center justify-between border-border border-b px-4 py-2"
 						>
-							<Text className="font-geist-medium text-destructive text-lg">
+							<Text className="font-geist-bold text-destructive text-lg">
 								Delete Account
 							</Text>
 						</Pressable>
@@ -163,6 +155,14 @@ const ProfilePage = () => {
 						</DialogFooter>
 					</DialogContent>
 				</Dialog>
+				<Pressable
+					onPress={logout}
+					className="flex-row items-center justify-between px-4 py-2"
+				>
+					<Text className="font-geist-bold text-destructive text-lg">
+						Logout
+					</Text>
+				</Pressable>
 			</View>
 		</Container>
 	);

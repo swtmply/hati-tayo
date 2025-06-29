@@ -11,12 +11,12 @@ const GroupsPage = () => {
 
 	return (
 		<Container>
-			<Text className="mb-2 font-geist-bold text-3xl text-foreground">
+			<Text className="mb-2 font-geist-bold text-3xl text-foreground tracking-tighter">
 				Groups
 			</Text>
 
 			<ScrollView className="flex-1">
-				<View className="gap-2">
+				<View className="gap-4">
 					{groups === undefined
 						? [1, 2, 3, 4, 5].map((_, index) => <GroupCardSkeleton key={_} />)
 						: groups.map((group) => (

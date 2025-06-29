@@ -10,6 +10,7 @@
 		"web": "expo start --web"
 	},
 	"dependencies": {
+		"@expo-google-fonts/bowlby-one-sc": "^0.4.0",
 		"@expo-google-fonts/geist": "^0.4.0",
 		"@expo/vector-icons": "^14.0.4",
 		"@gorhom/bottom-sheet": "^5.1.6",
@@ -29,6 +30,7 @@
 		"convex": "^1.23.0",
 		"date-fns": "^4.1.0",
 		"expo": "53.0.12",
+		"expo-asset": "~11.1.5",
 		"expo-blur": "~14.1.5",
 		"expo-constants": "~17.1.4",
 		"expo-contacts": "~14.2.5",

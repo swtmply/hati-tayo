@@ -1,4 +1,5 @@
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { BowlbyOneSC_400Regular } from "@expo-google-fonts/bowlby-one-sc";
 import {
 	Geist_400Regular,
 	Geist_500Medium,
@@ -82,6 +83,7 @@ export default function RootLayout() {
 		Geist_700Bold,
 		Geist_800ExtraBold,
 		Geist_900Black,
+		BowlbyOneSC_400Regular,
 	});
 
 	useIsomorphicLayoutEffect(() => {

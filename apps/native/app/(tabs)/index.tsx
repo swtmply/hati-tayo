@@ -8,7 +8,7 @@ import { Text } from "~/components/ui/text";
 export default function HomePage() {
 	return (
 		<Container>
-			<Text className="mb-2 font-geist-bold text-3xl text-foreground">
+			<Text className="mb-2 font-geist-bold text-3xl text-foreground tracking-tighter">
 				Home
 			</Text>
 			<AnimatedTransactionList />

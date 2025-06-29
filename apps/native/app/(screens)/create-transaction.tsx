@@ -9,7 +9,7 @@ import { z } from "zod";
 import AddMemberFormSheet from "~/components/add-member-form-sheet";
 import { Container } from "~/components/container";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
-import { ChevronLeft, Plus } from "~/components/ui/icons";
+import { ChevronLeft, CircleCheck, Plus } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem } from "~/components/ui/select";
@@ -117,7 +117,7 @@ const CreateTransactionForm = () => {
 
 	return (
 		<Container>
-			<View className="flex-row items-center justify-between pt-12 pb-4">
+			<View className="flex-row items-center justify-between pb-4">
 				<TouchableOpacity
 					onPress={() => {
 						router.replace("/(tabs)");
@@ -125,7 +125,9 @@ const CreateTransactionForm = () => {
 				>
 					<ChevronLeft className="text-primary" />
 				</TouchableOpacity>
-				<Text className="font-geist-semibold text-xl">Create Transaction</Text>
+				<Text className="font-geist-bold text-2xl tracking-tighter">
+					Create Transaction
+				</Text>
 				<ChevronLeft className="invisible" />
 			</View>
 
@@ -136,7 +138,7 @@ const CreateTransactionForm = () => {
 					<>
 						<Label>Group Name</Label>
 						<Input
-							placeholder="Select Group"
+							placeholder="Select Group or Create New"
 							onFocus={openSelect}
 							onBlur={closeSelect}
 							onChangeText={(text) => {
@@ -313,11 +315,12 @@ const CreateTransactionForm = () => {
 												);
 
 												return (
-													<View className="flex-row gap-2">
+													<View className="flex-col gap-2">
 														{/* User
 														 */}
 														{!userInGroup && (
-															<Pressable
+															<TouchableOpacity
+																className="flex-row items-center justify-between"
 																onPress={() => {
 																	if (userIsSelected) {
 																		Form.removeFieldValue(
@@ -335,19 +338,27 @@ const CreateTransactionForm = () => {
 																	}
 																}}
 															>
-																<Avatar
-																	alt={user?.name || ""}
+																<View className="flex-row items-center gap-2">
+																	<Avatar alt={user?.name || ""}>
+																		<AvatarImage
+																			source={{
+																				uri: user?.image,
+																			}}
+																		/>
+																	</Avatar>
+
+																	<Text className=" font-geist-semibold">
+																		{user?.name}
+																	</Text>
+																</View>
+																<CircleCheck
 																	className={cn(
-																		userIsSelected && "border-2 border-primary",
+																		"text-foreground",
+																		userIsSelected &&
+																			"rounded-full bg-secondary text-primary",
 																	)}
-																>
-																	<AvatarImage
-																		source={{
-																			uri: user?.image,
-																		}}
-																	/>
-																</Avatar>
-															</Pressable>
+																/>
+															</TouchableOpacity>
 														)}
 														{/* MARK: Group/Anonymous Members
 														 */}
@@ -360,7 +371,7 @@ const CreateTransactionForm = () => {
 															);
 
 															return (
-																<Pressable
+																<TouchableOpacity
 																	key={member._id}
 																	onPress={() => {
 																		if (selected) {
@@ -378,20 +389,34 @@ const CreateTransactionForm = () => {
 																			);
 																		}
 																	}}
+																	className="flex-row items-center justify-between"
 																>
-																	<Avatar
-																		alt={member.name}
+																	<View className="flex-row items-center gap-2">
+																		<Avatar alt={member.name}>
+																			<AvatarImage
+																				source={{
+																					uri: member.image,
+																				}}
+																			/>
+																			<AvatarImage
+																				source={{
+																					uri: member.image,
+																				}}
+																			/>
+																		</Avatar>
+
+																		<Text className=" font-geist-semibold">
+																			{member.name}
+																		</Text>
+																	</View>
+																	<CircleCheck
 																		className={cn(
-																			selected && "border-2 border-primary",
+																			"text-foreground",
+																			selected &&
+																				"rounded-full bg-secondary text-primary",
 																		)}
-																	>
-																		<AvatarImage
-																			source={{
-																				uri: member.image,
-																			}}
-																		/>
-																	</Avatar>
-																</Pressable>
+																	/>
+																</TouchableOpacity>
 															);
 														})}
 														{/* MARK: Add Member Button
@@ -400,9 +425,12 @@ const CreateTransactionForm = () => {
 															onPress={() => {
 																setOpenFormSheet(0);
 															}}
-															className="h-10 w-10 items-center justify-center rounded-full border border-neutral-400 border-dashed"
+															className="h-12 flex-row items-center justify-center rounded-full border border-neutral-400 border-dashed"
 														>
 															<Plus className="text-neutral-400" />
+															<Text className="text-neutral-400">
+																Add Member
+															</Text>
 														</Pressable>
 													</View>
 												);

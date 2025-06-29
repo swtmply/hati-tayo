@@ -1,4 +1,5 @@
 import type { Transaction } from "@hati-tayo/backend/convex/types";
+import { Image } from "expo-image";
 import React from "react";
 import { View } from "react-native";
 import Animated, {
@@ -97,15 +98,24 @@ export const FirstBubble = React.memo(
 		return (
 			<Animated.View
 				style={animatedStyle}
-				className="absolute top-12 left-12 aspect-square w-44 items-center justify-center gap-0.5 rounded-full bg-blue-200"
+				className="absolute top-12 left-12 aspect-square w-44 items-center justify-center gap-0.5 rounded-full bg-accent"
 			>
-				<Text className="text-4xl">✈️</Text>
-				<Text className="text-muted-foreground text-xs dark:text-muted">
+				<Image
+					source={{
+						uri: transaction.payer.image,
+					}}
+					style={{
+						height: 48,
+						width: 48,
+						borderRadius: 50,
+					}}
+				/>
+				<Text className="-mb-1 text-muted-foreground text-xs">
 					{transaction.name}
 				</Text>
 				<CurrencyFormat
 					amount={transaction.amount ?? 0}
-					className="font-geist-medium text-lg dark:text-primary-foreground"
+					className="font-geist-medium text-lg"
 				/>
 			</Animated.View>
 		);
@@ -166,15 +176,24 @@ const SecondBubble = React.memo(({ duo, transaction }: SecondBubbleProps) => {
 	return (
 		<Animated.View
 			style={animatedStyle}
-			className="absolute top-4 right-12 aspect-square w-32 items-center justify-center rounded-full bg-green-200"
+			className="absolute top-4 right-12 aspect-square w-32 items-center justify-center rounded-full bg-accent"
 		>
-			<Text className="text-4xl">🏖️</Text>
-			<Text className="text-muted-foreground text-xs dark:text-muted">
+			<Image
+				source={{
+					uri: transaction.payer.image,
+				}}
+				style={{
+					height: 48,
+					width: 48,
+					borderRadius: 50,
+				}}
+			/>
+			<Text className="-mb-1 text-muted-foreground text-xs">
 				{transaction.name}
 			</Text>
 			<CurrencyFormat
 				amount={transaction.amount ?? 0}
-				className="font-geist-medium text-lg dark:text-primary-foreground"
+				className="font-geist-medium text-lg"
 			/>
 		</Animated.View>
 	);
@@ -224,15 +243,24 @@ const ThirdBubble = React.memo(
 		return (
 			<Animated.View
 				style={animatedStyle}
-				className="absolute h-full max-h-28 w-28 items-center justify-center rounded-full bg-yellow-200"
+				className="absolute h-full max-h-28 w-28 items-center justify-center rounded-full bg-accent"
 			>
-				<Text className="text-3xl">🍚</Text>
-				<Text className="text-muted-foreground text-xs dark:text-muted">
+				<Image
+					source={{
+						uri: transaction.payer.image,
+					}}
+					style={{
+						height: 48,
+						width: 48,
+						borderRadius: 50,
+					}}
+				/>
+				<Text className="-mb-1 text-muted-foreground text-xs">
 					{transaction.name}
 				</Text>
 				<CurrencyFormat
 					amount={transaction.amount ?? 0}
-					className="font-geist-medium text-sm dark:text-primary-foreground"
+					className="font-geist-medium text-sm"
 				/>
 			</Animated.View>
 		);

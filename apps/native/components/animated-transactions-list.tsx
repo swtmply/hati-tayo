@@ -70,7 +70,7 @@ const AnimatedTransactionList = () => {
 			keyExtractor={(item: Transaction) => item._id}
 			ItemSeparatorComponent={() => (
 				<Pressable>
-					<View className="h-2 bg-background" />
+					<View className="h-4 bg-background" />
 				</Pressable>
 			)}
 			ListHeaderComponent={() => {
@@ -95,17 +95,19 @@ const AnimatedTransactionList = () => {
 							<View className="mb-4 flex-row items-center justify-around">
 								{shares && shares?.totalOwed > 0 && (
 									<View className="flex-col items-center">
-										<Text className="font-sans text-lg">You owe</Text>
+										<Text className="font-geist-semibold text-lg">You owe</Text>
 
 										<CurrencyFormat
 											amount={shares?.totalOwed ?? 0}
-											className="font-geist-bold text-4xl text-red-400 tracking-tighter"
+											className="font-geist-bold text-4xl text-destructive tracking-tighter"
 										/>
 									</View>
 								)}
 								{shares && shares?.totalPaid > 0 && (
 									<View className="flex-col items-center">
-										<Text className="font-sans text-lg">You are owed</Text>
+										<Text className="font-geist-semibold text-lg">
+											You are owed
+										</Text>
 
 										<CurrencyFormat
 											amount={shares?.totalPaid ?? 0}
@@ -115,7 +117,9 @@ const AnimatedTransactionList = () => {
 								)}
 							</View>
 
-							<Text className="font-geist-semibold">Transactions</Text>
+							<Text className="font-geist-bold tracking-tighter">
+								Recent Transactions
+							</Text>
 						</Animated.View>
 					</Pressable>
 				);
