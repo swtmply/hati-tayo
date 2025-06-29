@@ -119,12 +119,18 @@ export const getGroupDetailsById = query({
 		}
 
 		const transactions = [];
+		const userPaidTransactions = [];
 
 		for await (const transaction of ctx.db
 			.query("transactions")
 			.withIndex("by_groupId", (q) => q.eq("groupId", group._id))
 			.order("desc")) {
 			const payer = await ctx.db.get(transaction.payerId);
+
+			if (payer !== null && payer._id === user._id) {
+				userPaidTransactions.push(transaction);
+			}
+
 			const members = [];
 			const share = await ctx.db
 				.query("transactionShares")
@@ -178,6 +184,7 @@ export const getGroupDetailsById = query({
 			...group,
 			transactions,
 			participants,
+			userPaidTransactions,
 		};
 	},
 });

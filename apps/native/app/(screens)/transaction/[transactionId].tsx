@@ -111,8 +111,8 @@ const TransactionDetails = () => {
 			{/* MARK: Transaction Summary
 			 */}
 			<View className="mb-4 flex-row items-center justify-around">
-				<View className="flex-col items-center">
-					<Text className="font-sans text-lg">
+				<View className="flex-col items-center justify-center">
+					<Text className="font-geist-semibold text-lg">
 						{transaction.payer.name} paid
 					</Text>
 
@@ -122,8 +122,8 @@ const TransactionDetails = () => {
 					/>
 				</View>
 				{transaction.totalOwed > 0 && (
-					<View className="flex-col items-center">
-						<Text className="font-sans text-lg">You owe</Text>
+					<View className="flex-col items-center justify-center">
+						<Text className="font-geist-semibold text-lg">You owe</Text>
 
 						<CurrencyFormat
 							amount={transaction.totalOwed}
@@ -134,13 +134,13 @@ const TransactionDetails = () => {
 			</View>
 
 			<View>
-				<Text className="font-geist-semibold text-xl">Members</Text>
+				<Text className="font-geist-bold tracking-tighter">Members</Text>
 			</View>
 
 			<View className="flex-col gap-2">
 				{transaction.participants.map((participant) => (
 					<View key={participant._id} className="flex-row items-center gap-2">
-						<Avatar alt={participant.name} className="h-14 w-14">
+						<Avatar alt={participant.name}>
 							<AvatarImage
 								source={{
 									uri: participant.image,

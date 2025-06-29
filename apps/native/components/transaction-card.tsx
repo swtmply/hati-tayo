@@ -49,7 +49,7 @@ const TransactionCard = ({
 							alt={member.name}
 							key={member._id}
 							className={cn(
-								"-ml-6 h-12 w-12 rounded-full",
+								"-ml-6 rounded-full",
 								transaction.payerId === member._id
 									? "border-2 border-primary"
 									: "",
@@ -72,7 +72,7 @@ const TransactionCard = ({
 					<CurrencyFormat
 						amount={transaction.share?.amount ?? 0}
 						className={cn(
-							"font-geist-bold text-2xl tracking-tighter",
+							"-mb-1 font-geist-bold text-2xl tracking-tighter",
 							transaction.share?.status === "PENDING"
 								? "text-destructive"
 								: "text-primary",

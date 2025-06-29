@@ -16,7 +16,7 @@ const GroupsPage = () => {
 			</Text>
 
 			<ScrollView className="flex-1">
-				<View className="gap-2">
+				<View className="gap-4">
 					{groups === undefined
 						? [1, 2, 3, 4, 5].map((_, index) => <GroupCardSkeleton key={_} />)
 						: groups.map((group) => (

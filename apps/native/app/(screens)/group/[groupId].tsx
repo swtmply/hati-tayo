@@ -21,6 +21,42 @@ const GroupDetails = () => {
 		id: groupId as Id<"groups">,
 	});
 
+	const user = useQuery(api.users.get);
+
+	const userOwed = group?.participants.reduce((total, participant) => {
+		if (participant.shares?.some((share) => share.userId === user?._id)) {
+			return (
+				total +
+				participant.shares.reduce((total, share) => {
+					if (share.status === "PAID") {
+						return total;
+					}
+					return total + share.amount;
+				}, 0)
+			);
+		}
+		return total;
+	}, 0);
+
+	const debtToUser = group?.participants.reduce((total, participant) => {
+		const sharesToUser = participant.shares?.filter((share) =>
+			group.userPaidTransactions.find(
+				(transaction) => transaction._id === share.transactionId,
+			),
+		);
+
+		let totalDebt = total;
+
+		for (const share of sharesToUser) {
+			if (share.status === "PAID") {
+				continue;
+			}
+			totalDebt += share.amount;
+		}
+
+		return totalDebt;
+	}, 0);
+
 	if (group === undefined || group === null) {
 		return (
 			<Container>
@@ -64,6 +100,23 @@ const GroupDetails = () => {
 			</View>
 
 			<ScrollView>
+				<View className="flex-row items-center justify-around">
+					<View className="flex-col items-center justify-center">
+						<Text className="font-geist-semibold text-lg">You owe</Text>
+						<CurrencyFormat
+							amount={userOwed ?? 0}
+							className="font-geist-bold text-4xl text-destructive"
+						/>
+					</View>
+
+					<View className="flex-col items-center justify-center">
+						<Text className="font-geist-semibold text-lg">You are owed</Text>
+						<CurrencyFormat
+							amount={debtToUser ?? 0}
+							className="font-geist-bold text-4xl text-primary"
+						/>
+					</View>
+				</View>
 				<Text className="my-4 font-geist-bold tracking-tighter">Members</Text>
 
 				{group.participants.map((member) => {
@@ -73,6 +126,19 @@ const GroupDetails = () => {
 						}
 						return total + share.amount;
 					}, 0);
+
+					const debtToUser = member.shares
+						.filter((share) =>
+							group.userPaidTransactions.find(
+								(transaction) => transaction._id === share.transactionId,
+							),
+						)
+						.reduce((total, share) => {
+							if (share.status === "PAID") {
+								return total;
+							}
+							return total + share.amount;
+						}, 0);
 
 					return (
 						<View
@@ -85,17 +151,28 @@ const GroupDetails = () => {
 								</Avatar>
 								<Text className="font-geist-semibold">{member.name}</Text>
 							</View>
-							{owed === 0 ? (
-								<Text className="text-muted-foreground">No debt</Text>
-							) : (
-								<View className="flex-row items-center gap-1">
-									<Text>Owes</Text>
-									<CurrencyFormat
-										amount={owed}
-										className="font-geist-bold text-destructive"
-									/>
-								</View>
-							)}
+							<View>
+								{owed === 0 ? (
+									<Text className="text-muted-foreground">No debt</Text>
+								) : (
+									<View className="flex-row items-center justify-end gap-1">
+										<Text>Owes</Text>
+										<CurrencyFormat
+											amount={owed}
+											className="font-geist-bold text-destructive"
+										/>
+									</View>
+								)}
+								{debtToUser === 0 ? null : (
+									<View className="flex-row items-center justify-end gap-1">
+										<Text>Owes you</Text>
+										<CurrencyFormat
+											amount={debtToUser}
+											className="font-geist-bold text-primary"
+										/>
+									</View>
+								)}
+							</View>
 						</View>
 					);
 				})}

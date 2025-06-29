@@ -95,7 +95,7 @@ const AnimatedTransactionList = () => {
 							<View className="mb-4 flex-row items-center justify-around">
 								{shares && shares?.totalOwed > 0 && (
 									<View className="flex-col items-center">
-										<Text className="font-sans text-lg">You owe</Text>
+										<Text className="font-geist-semibold text-lg">You owe</Text>
 
 										<CurrencyFormat
 											amount={shares?.totalOwed ?? 0}
@@ -105,7 +105,9 @@ const AnimatedTransactionList = () => {
 								)}
 								{shares && shares?.totalPaid > 0 && (
 									<View className="flex-col items-center">
-										<Text className="font-sans text-lg">You are owed</Text>
+										<Text className="font-geist-semibold text-lg">
+											You are owed
+										</Text>
 
 										<CurrencyFormat
 											amount={shares?.totalPaid ?? 0}
