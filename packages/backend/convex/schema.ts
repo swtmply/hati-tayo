@@ -33,6 +33,7 @@ export default defineSchema({
 		date: v.number(),
 		name: v.string(),
 		splitType: v.string(),
+		splitDetails: v.optional(v.any()), // To store details for percentage, fixed, or shares
 		image: v.optional(v.string()),
 
 		createdAt: v.number(),

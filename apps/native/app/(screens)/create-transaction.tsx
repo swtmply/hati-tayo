@@ -23,6 +23,7 @@ const CreateTransactionForm = () => {
 	const { dismissKeyboard } = useKeyboard();
 
 	const [openFormSheet, setOpenFormSheet] = React.useState<number>(-1);
+	const [selectedSplitType, setSelectedSplitType] = React.useState<string>("EQUAL");
 
 	const groups = useQuery(api.groups.groupsOfCurrentUserWithMembers);
 	const user = useQuery(api.users.get);
@@ -38,6 +39,7 @@ const CreateTransactionForm = () => {
 			payer: "",
 			members: [{ _id: "", name: "", image: "" }],
 			selectedMembers: [{ _id: "", name: "", image: "" }],
+			splitDetails: [] as Array<{ userId: string; value: string }>,
 		},
 		validators: {
 			onSubmit: z.object({
@@ -76,6 +78,108 @@ const CreateTransactionForm = () => {
 						}),
 					)
 					.min(1, "At least one member must be involved in the transaction."),
+				splitDetails: z.array(
+					z.object({
+						userId: z.string(),
+						value: z.string(),
+					}),
+				),
+			})
+			.superRefine((data, ctx) => {
+				// Validation for PERCENTAGE
+				if (selectedSplitType === "PERCENTAGE") {
+					if (data.splitDetails.length !== data.selectedMembers.length) {
+						ctx.addIssue({
+							code: z.ZodIssueCode.custom,
+							message: "Percentage must be specified for all selected members.",
+							path: ["splitDetails"],
+						});
+						return;
+					}
+					const totalPercentage = data.splitDetails.reduce((sum, detail) => {
+						const percentage = Number.parseFloat(detail.value);
+						return sum + (Number.isNaN(percentage) ? 0 : percentage);
+					}, 0);
+					if (totalPercentage !== 100) {
+						ctx.addIssue({
+							code: z.ZodIssueCode.custom,
+							message: `Total percentage must be 100%. Current: ${totalPercentage}%`,
+							path: ["splitDetails"],
+						});
+					}
+					data.splitDetails.forEach((detail, index) => {
+						if (Number.parseFloat(detail.value) <=0) {
+							ctx.addIssue({
+								code: z.ZodIssueCode.custom,
+								message: "Percentage must be greater than 0.",
+								path: [`splitDetails`, index.toString(), "value"],
+							});
+						}
+					});
+				}
+				// Validation for FIXED
+				if (selectedSplitType === "FIXED") {
+					if (data.splitDetails.length !== data.selectedMembers.length) {
+						ctx.addIssue({
+							code: z.ZodIssueCode.custom,
+							message: "Fixed amount must be specified for all selected members.",
+							path: ["splitDetails"],
+						});
+						return;
+					}
+					const totalFixedAmount = data.splitDetails.reduce((sum, detail) => {
+						const amount = Number.parseFloat(detail.value);
+						return sum + (Number.isNaN(amount) ? 0 : amount);
+					},0);
+					const transactionAmount = Number.parseFloat(data.amount);
+					if (totalFixedAmount !== transactionAmount) {
+						ctx.addIssue({
+							code: z.ZodIssueCode.custom,
+							message: `Total fixed amounts must equal transaction amount (${transactionAmount}). Current: ${totalFixedAmount}`,
+							path: ["splitDetails"],
+						});
+					}
+					data.splitDetails.forEach((detail, index) => {
+						if (Number.parseFloat(detail.value) <=0) {
+							ctx.addIssue({
+								code: z.ZodIssueCode.custom,
+								message: "Fixed amount must be greater than 0.",
+								path: [`splitDetails`, index.toString(), "value"],
+							});
+						}
+					});
+				}
+				// Validation for SHARES
+				if (selectedSplitType === "SHARES") {
+					if (data.splitDetails.length !== data.selectedMembers.length) {
+						ctx.addIssue({
+							code: z.ZodIssueCode.custom,
+							message: "Shares must be specified for all selected members.",
+							path: ["splitDetails"],
+						});
+						return;
+					}
+					const totalShares = data.splitDetails.reduce((sum, detail) => {
+						const shares = Number.parseFloat(detail.value);
+						return sum + (Number.isNaN(shares) ? 0 : shares);
+					}, 0);
+					if (totalShares <= 0) {
+						ctx.addIssue({
+							code: z.ZodIssueCode.custom,
+							message: "Total shares must be greater than 0.",
+							path: ["splitDetails"],
+						});
+					}
+					data.splitDetails.forEach((detail, index) => {
+						if (Number.parseFloat(detail.value) <=0) {
+							ctx.addIssue({
+								code: z.ZodIssueCode.custom,
+								message: "Shares must be greater than 0.",
+								path: [`splitDetails`, index.toString(), "value"],
+							});
+						}
+					});
+				}
 			}),
 		},
 		// MARK: onSubmit
@@ -86,6 +190,25 @@ const CreateTransactionForm = () => {
 
 				participants.push(member as Doc<"users">);
 			}
+
+			let finalSplitDetails;
+			if (selectedSplitType === "PERCENTAGE") {
+				finalSplitDetails = value.splitDetails.map(detail => ({
+					userId: detail.userId as Id<"users">,
+					percentage: Number.parseFloat(detail.value),
+				}));
+			} else if (selectedSplitType === "FIXED") {
+				finalSplitDetails = value.splitDetails.map(detail => ({
+					userId: detail.userId as Id<"users">,
+					amount: Number.parseFloat(detail.value),
+				}));
+			} else if (selectedSplitType === "SHARES") {
+				finalSplitDetails = value.splitDetails.map(detail => ({
+					userId: detail.userId as Id<"users">,
+					shares: Number.parseFloat(detail.value),
+				}));
+			}
+
 
 			createTransaction({
 				name: value.transactionName,
@@ -100,9 +223,11 @@ const CreateTransactionForm = () => {
 					phoneNumber: user.phoneNumber,
 				})),
 				amount: Number(value.amount),
-				splitType: "EQUAL",
+				splitType: selectedSplitType,
+				splitDetails: finalSplitDetails,
 			});
 			Form.reset();
+			setSelectedSplitType("EQUAL");
 			router.replace("/(tabs)");
 		},
 	});
@@ -272,6 +397,35 @@ const CreateTransactionForm = () => {
 					</>
 				)}
 			</Form.Field>
+
+			{/* MARK: Split Type Selection
+			 */}
+			<View className="my-4">
+				<Label className="mb-2">Split Type</Label>
+				<View className="flex-row justify-around rounded-lg bg-muted p-1">
+					{(["EQUAL", "PERCENTAGE", "FIXED", "SHARES"] as const).map((type) => (
+						<Pressable
+							key={type}
+							onPress={() => setSelectedSplitType(type)}
+							className={cn(
+								"flex-1 items-center rounded-md py-2",
+								selectedSplitType === type && "bg-background shadow-sm",
+							)}
+						>
+							<Text
+								className={cn(
+									"font-geist-medium",
+									selectedSplitType === type
+										? "text-foreground"
+										: "text-muted-foreground",
+								)}
+							>
+								{type.charAt(0) + type.slice(1).toLowerCase()}
+							</Text>
+						</Pressable>
+					))}
+				</View>
+			</View>
 
 			{/* MARK: Select Member List
 			 */}
@@ -443,6 +597,104 @@ const CreateTransactionForm = () => {
 					}}
 				</Form.Subscribe>
 			</View>
+
+
+			{/* MARK: Split Detail Inputs
+			 */}
+			{selectedSplitType !== "EQUAL" && (
+				<View className="my-4 flex flex-col gap-2">
+					<Label>
+						Split by{" "}
+						{selectedSplitType.charAt(0) +
+							selectedSplitType.slice(1).toLowerCase()}
+					</Label>
+					<Form.Field name="splitDetails">
+						{(field) => (
+							<>
+								{field.state.meta.touched && field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+									<Text className="mb-2 text-destructive text-sm">
+										{/* Only show the first error for general messages, specific errors shown by inputs */}
+										{field.state.meta.errors
+											.filter(e => !(e?.message.startsWith("Percentage must be greater") || e?.message.startsWith("Fixed amount must be greater") || e?.message.startsWith("Shares must be greater")))
+											.map((error) => error?.message)
+											.join(", ")}
+									</Text>
+								) : null}
+							</>
+						)}
+					</Form.Field>
+					<Form.Subscribe selector={(state) => state.values.selectedMembers}>
+						{(selectedMembers) => {
+							// Update splitDetails whenever selectedMembers or selectedSplitType change
+							React.useEffect(() => {
+								const newSplitDetails = selectedMembers
+									.filter(member => member._id !== "") // Filter out placeholder member
+									.map(member => ({
+										userId: member._id,
+										// Reset value when split type changes, or keep existing if just members change (though this might be complex)
+										// For simplicity, we'll reset to empty when splitType changes, or when a new member is added.
+										// A more sophisticated approach might try to preserve values if the member was already there.
+										value: "",
+									}));
+								Form.setFieldValue("splitDetails", newSplitDetails);
+								// Trigger validation for splitDetails when it's reset
+								Form.validateField("splitDetails");
+							}, [selectedMembers, selectedSplitType]);
+
+							if (selectedMembers.length === 0 || (selectedMembers.length === 1 && selectedMembers[0]._id === "")) {
+								return (
+									<Text className="text-center text-neutral-400">
+										Please select members to split with.
+									</Text>
+								);
+							}
+
+							return selectedMembers.map((member, index) => {
+								if (member._id === "") return null;
+								return (
+									<Form.Field key={member._id} name={`splitDetails[${index}].value`}>
+										{(field) => (
+											<View className="flex-row items-center gap-2">
+												<Avatar alt={member.name} className="h-8 w-8">
+													<AvatarImage source={{ uri: member.image }} />
+												</Avatar>
+												<Text className="w-1/3 flex-shrink font-geist-medium" numberOfLines={1} ellipsizeMode="tail">
+													{member.name}
+												</Text>
+												<Input
+													placeholder={
+														selectedSplitType === "PERCENTAGE"
+															? "%"
+															: selectedSplitType === "FIXED"
+																? "Amount"
+																: "Shares"
+													}
+													onChangeText={(text) => {
+														const numericValue = text.replace(/[^0-9.]/g, "");
+														// Ensure the specific item in splitDetails is updated
+														const updatedDetails = Form.state.values.splitDetails.map((detail, i) =>
+															i === index ? { ...detail, value: numericValue } : detail
+														);
+														Form.setFieldValue("splitDetails", updatedDetails);
+													}}
+													value={field.state.value} // Use field.state.value directly
+													keyboardType="numeric"
+													className="flex-1"
+												/>
+												{field.state.meta.touched && field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+													<Text className="text-destructive text-xs w-full">
+														{field.state.meta.errors.join(", ")}
+													</Text>
+												) : null}
+											</View>
+										)}
+									</Form.Field>
+								);
+							});
+						}}
+					</Form.Subscribe>
+				</View>
+			)}
 
 			{/* MARK: Payer
 			 */}

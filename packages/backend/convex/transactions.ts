@@ -161,6 +161,7 @@ export const createTransaction = mutation({
 		),
 		amount: v.number(),
 		splitType: v.string(),
+		splitDetails: v.optional(v.any()),
 		payerId: v.string(),
 	},
 	handler: async (ctx, args) => {
@@ -234,17 +235,79 @@ export const createTransaction = mutation({
 			amount: args.amount,
 			date: Date.now(),
 			splitType: args.splitType,
+			splitDetails: args.splitDetails,
 			createdAt: Date.now(),
 			updatedAt: Date.now(),
 		});
 
 		// Create transaction shares
-		for (const participant of participantsIds) {
+		let shareAmount = 0;
+		const totalParticipants = participantsIds.length;
+
+		if (args.splitType === "EQUAL") {
+			shareAmount = args.amount / totalParticipants;
+		}
+
+		for (const participantId of participantsIds) {
+			if (args.splitType === "PERCENTAGE") {
+				const userSplitDetail = args.splitDetails?.find(
+					(detail: { userId: Id<"users"> }) => detail.userId === participantId,
+				);
+				if (userSplitDetail) {
+					shareAmount = (args.amount * userSplitDetail.percentage) / 100;
+				} else {
+					// Should not happen if validation is correct on frontend
+					console.error(
+						"Percentage split detail not found for participant:",
+						participantId,
+					);
+					shareAmount = 0;
+				}
+			} else if (args.splitType === "FIXED") {
+				const userSplitDetail = args.splitDetails?.find(
+					(detail: { userId: Id<"users"> }) => detail.userId === participantId,
+				);
+				if (userSplitDetail) {
+					shareAmount = userSplitDetail.amount;
+				} else {
+					// Should not happen
+					console.error(
+						"Fixed amount split detail not found for participant:",
+						participantId,
+					);
+					shareAmount = 0;
+				}
+			} else if (args.splitType === "SHARES") {
+				const totalShares = args.splitDetails?.reduce(
+					(sum: number, detail: { shares: number }) => sum + detail.shares,
+					0,
+				);
+				if (totalShares > 0) {
+					const userSplitDetail = args.splitDetails?.find(
+						(detail: { userId: Id<"users"> }) => detail.userId === participantId,
+					);
+					if (userSplitDetail) {
+						shareAmount = (args.amount * userSplitDetail.shares) / totalShares;
+					} else {
+						// Should not happen
+						console.error(
+							"Shares split detail not found for participant:",
+							participantId,
+						);
+						shareAmount = 0;
+					}
+				} else {
+					// Avoid division by zero if totalShares is 0
+					shareAmount = 0;
+				}
+			}
+			// For "EQUAL", shareAmount is already set before the loop
+
 			await ctx.db.insert("transactionShares", {
 				transactionId: transaction,
-				userId: participant,
-				status: payerId === participant ? "PAID" : "PENDING",
-				amount: args.amount / participantsIds.length,
+				userId: participantId,
+				status: payerId === participantId ? "PAID" : "PENDING",
+				amount: shareAmount,
 				createdAt: Date.now(),
 				updatedAt: Date.now(),
 			});
