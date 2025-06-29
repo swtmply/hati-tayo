@@ -23,7 +23,6 @@ const CreateTransactionForm = () => {
 	const { dismissKeyboard } = useKeyboard();
 
 	const [openFormSheet, setOpenFormSheet] = React.useState<number>(-1);
-	const [selectedSplitType, setSelectedSplitType] = React.useState<string>("EQUAL");
 
 	const groups = useQuery(api.groups.groupsOfCurrentUserWithMembers);
 	const user = useQuery(api.users.get);
@@ -39,13 +38,15 @@ const CreateTransactionForm = () => {
 			payer: "",
 			members: [{ _id: "", name: "", image: "" }],
 			selectedMembers: [{ _id: "", name: "", image: "" }],
-			splitDetails: [] as Array<{ userId: string; value: string }>,
+			splitDetails: [] as Array<{ userId:string; value: string }>,
+			splitType: "EQUAL",
 		},
 		validators: {
 			onSubmit: z.object({
 				groupName: z.string().min(1, "Group name is required."),
 				groupId: z.string(), // Not directly validated with message, linked to groupName
 				transactionName: z.string().min(1, "Transaction name is required."),
+				splitType: z.string(),
 				amount: z
 					.string()
 					.min(1, "Amount is required.")
@@ -87,7 +88,7 @@ const CreateTransactionForm = () => {
 			})
 			.superRefine((data, ctx) => {
 				// Validation for PERCENTAGE
-				if (selectedSplitType === "PERCENTAGE") {
+				if (data.splitType === "PERCENTAGE") { // Use data.splitType
 					if (data.splitDetails.length !== data.selectedMembers.length) {
 						ctx.addIssue({
 							code: z.ZodIssueCode.custom,
@@ -118,7 +119,7 @@ const CreateTransactionForm = () => {
 					});
 				}
 				// Validation for FIXED
-				if (selectedSplitType === "FIXED") {
+				if (data.splitType === "FIXED") { // Use data.splitType
 					if (data.splitDetails.length !== data.selectedMembers.length) {
 						ctx.addIssue({
 							code: z.ZodIssueCode.custom,
@@ -150,7 +151,7 @@ const CreateTransactionForm = () => {
 					});
 				}
 				// Validation for SHARES
-				if (selectedSplitType === "SHARES") {
+				if (data.splitType === "SHARES") { // Use data.splitType
 					if (data.splitDetails.length !== data.selectedMembers.length) {
 						ctx.addIssue({
 							code: z.ZodIssueCode.custom,
@@ -192,17 +193,17 @@ const CreateTransactionForm = () => {
 			}
 
 			let finalSplitDetails;
-			if (selectedSplitType === "PERCENTAGE") {
+			if (value.splitType === "PERCENTAGE") { // Use value.splitType
 				finalSplitDetails = value.splitDetails.map(detail => ({
 					userId: detail.userId as Id<"users">,
 					percentage: Number.parseFloat(detail.value),
 				}));
-			} else if (selectedSplitType === "FIXED") {
+			} else if (value.splitType === "FIXED") { // Use value.splitType
 				finalSplitDetails = value.splitDetails.map(detail => ({
 					userId: detail.userId as Id<"users">,
 					amount: Number.parseFloat(detail.value),
 				}));
-			} else if (selectedSplitType === "SHARES") {
+			} else if (value.splitType === "SHARES") { // Use value.splitType
 				finalSplitDetails = value.splitDetails.map(detail => ({
 					userId: detail.userId as Id<"users">,
 					shares: Number.parseFloat(detail.value),
@@ -223,11 +224,10 @@ const CreateTransactionForm = () => {
 					phoneNumber: user.phoneNumber,
 				})),
 				amount: Number(value.amount),
-				splitType: selectedSplitType,
+				splitType: value.splitType, // Use value.splitType
 				splitDetails: finalSplitDetails,
 			});
-			Form.reset();
-			setSelectedSplitType("EQUAL");
+			Form.reset(); // This will reset splitType to "EQUAL" as defined in defaultValues
 			router.replace("/(tabs)");
 		},
 	});
@@ -402,29 +402,35 @@ const CreateTransactionForm = () => {
 			 */}
 			<View className="my-4">
 				<Label className="mb-2">Split Type</Label>
-				<View className="flex-row justify-around rounded-lg bg-muted p-1">
-					{(["EQUAL", "PERCENTAGE", "FIXED", "SHARES"] as const).map((type) => (
-						<Pressable
-							key={type}
-							onPress={() => setSelectedSplitType(type)}
-							className={cn(
-								"flex-1 items-center rounded-md py-2",
-								selectedSplitType === type && "bg-background shadow-sm",
+				<Form.Subscribe selector={(state) => state.values.splitType}>
+					{(currentSplitType) => (
+						<View className="flex-row justify-around rounded-lg bg-muted p-1">
+							{(["EQUAL", "PERCENTAGE", "FIXED", "SHARES"] as const).map(
+								(type) => (
+									<Pressable
+										key={type}
+										onPress={() => Form.setFieldValue("splitType", type)}
+										className={cn(
+											"flex-1 items-center rounded-md py-2",
+											currentSplitType === type && "bg-background shadow-sm",
+										)}
+									>
+										<Text
+											className={cn(
+												"font-geist-medium",
+												currentSplitType === type
+													? "text-foreground"
+													: "text-muted-foreground",
+											)}
+										>
+											{type.charAt(0) + type.slice(1).toLowerCase()}
+										</Text>
+									</Pressable>
+								),
 							)}
-						>
-							<Text
-								className={cn(
-									"font-geist-medium",
-									selectedSplitType === type
-										? "text-foreground"
-										: "text-muted-foreground",
-								)}
-							>
-								{type.charAt(0) + type.slice(1).toLowerCase()}
-							</Text>
-						</Pressable>
-					))}
-				</View>
+						</View>
+					)}
+				</Form.Subscribe>
 			</View>
 
 			{/* MARK: Select Member List
@@ -601,15 +607,17 @@ const CreateTransactionForm = () => {
 
 			{/* MARK: Split Detail Inputs
 			 */}
-			{selectedSplitType !== "EQUAL" && (
-				<View className="my-4 flex flex-col gap-2">
-					<Label>
-						Split by{" "}
-						{selectedSplitType.charAt(0) +
-							selectedSplitType.slice(1).toLowerCase()}
-					</Label>
-					<Form.Field name="splitDetails">
-						{(field) => (
+			<Form.Subscribe selector={(state) => state.values.splitType}>
+				{(currentSplitType) =>
+					currentSplitType !== "EQUAL" && (
+						<View className="my-4 flex flex-col gap-2">
+							<Label>
+								Split by{" "}
+								{currentSplitType.charAt(0) +
+									currentSplitType.slice(1).toLowerCase()}
+							</Label>
+							<Form.Field name="splitDetails">
+								{(field) => (
 							<>
 								{field.state.meta.touched && field.state.meta.errors && field.state.meta.errors.length > 0 ? (
 									<Text className="mb-2 text-destructive text-sm">
@@ -625,21 +633,18 @@ const CreateTransactionForm = () => {
 					</Form.Field>
 					<Form.Subscribe selector={(state) => state.values.selectedMembers}>
 						{(selectedMembers) => {
-							// Update splitDetails whenever selectedMembers or selectedSplitType change
+							// Update splitDetails whenever selectedMembers or form's splitType change
 							React.useEffect(() => {
+								const currentSplitTypeFromForm = Form.getFieldValue("splitType");
 								const newSplitDetails = selectedMembers
 									.filter(member => member._id !== "") // Filter out placeholder member
 									.map(member => ({
 										userId: member._id,
-										// Reset value when split type changes, or keep existing if just members change (though this might be complex)
-										// For simplicity, we'll reset to empty when splitType changes, or when a new member is added.
-										// A more sophisticated approach might try to preserve values if the member was already there.
-										value: "",
+										value: "", // Always reset to empty for simplicity when members or type change
 									}));
 								Form.setFieldValue("splitDetails", newSplitDetails);
-								// Trigger validation for splitDetails when it's reset
 								Form.validateField("splitDetails");
-							}, [selectedMembers, selectedSplitType]);
+							}, [selectedMembers, Form.state.values.splitType]); // Depend on form's splitType
 
 							if (selectedMembers.length === 0 || (selectedMembers.length === 1 && selectedMembers[0]._id === "")) {
 								return (
@@ -695,6 +700,7 @@ const CreateTransactionForm = () => {
 					</Form.Subscribe>
 				</View>
 			)}
+			</Form.Subscribe>
 
 			{/* MARK: Payer
 			 */}
