@@ -10,9 +10,11 @@ export type Transaction = ArrayElementType<TransactionsOfCurrentUser>;
 export type TransactionShare = FunctionReturnType<
 	typeof api.transactions.getTransactionDetailsById
 >;
-export type TransactionShareMembers = TransactionShare["participants"];
+export type TransactionShareMembers = Transaction["participants"];
 
 export type GroupsOfCurrentUser = FunctionReturnType<
 	typeof api.groups.groupsOfCurrentUser
 >;
 export type Group = ArrayElementType<GroupsOfCurrentUser>;
+
+export type GroupMembers = Group["members"];

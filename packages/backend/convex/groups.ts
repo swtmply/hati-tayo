@@ -1,5 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 export const groupsOfCurrentUser = query({
@@ -69,6 +70,26 @@ export const groupsOfCurrentUser = query({
 	},
 });
 
+type GroupParticipant = {
+	_id: Id<"users">;
+	_creationTime: number;
+	email?: string | undefined;
+	phoneNumber?: string | undefined;
+	name: string;
+	image: string;
+	createdAt: number;
+	updatedAt: number;
+	shares: {
+		_id: Id<"transactionShares">;
+		_creationTime: number;
+		createdAt: number;
+		updatedAt: number;
+		amount: number;
+		transactionId: Id<"transactions">;
+		userId: Id<"users">;
+		status: string;
+	}[];
+};
 export const getGroupDetailsById = query({
 	args: {
 		id: v.id("groups"),
@@ -84,6 +105,17 @@ export const getGroupDetailsById = query({
 		const group = await ctx.db.get(args.id);
 		if (group === null) {
 			return null;
+		}
+
+		const participants: GroupParticipant[] = [];
+
+		for await (const memberId of group.members) {
+			const member = await ctx.db.get(memberId);
+			if (member === null) {
+				continue;
+			}
+
+			participants.push({ ...member, shares: [] });
 		}
 
 		const transactions = [];
@@ -114,6 +146,15 @@ export const getGroupDetailsById = query({
 					)
 					.filter((q) => q.eq(q.field("userId"), member._id))
 					.unique();
+
+				const participantIndex = participants.findIndex(
+					(p) => p._id === member._id,
+				);
+
+				if (participantIndex !== -1 && share !== null) {
+					participants[participantIndex].shares.push(share);
+				}
+
 				members.push({
 					...member,
 					share,
@@ -136,6 +177,7 @@ export const getGroupDetailsById = query({
 		return {
 			...group,
 			transactions,
+			participants,
 		};
 	},
 });

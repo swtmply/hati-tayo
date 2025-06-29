@@ -1,4 +1,6 @@
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useAssets } from "expo-asset";
+import { Image } from "expo-image";
 import { Link } from "expo-router";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -8,6 +10,8 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { useAppForm } from "~/hooks/useAppForm";
+import { useKeyboard } from "~/hooks/useKeyboard";
+import { cn } from "~/lib/utils";
 
 const SignUpPage = () => {
 	const { signIn } = useAuthActions();
@@ -42,9 +46,33 @@ const SignUpPage = () => {
 		},
 	});
 
+	const [assets, error] = useAssets([
+		require("~/assets/start-icon-light.png"),
+		require("~/assets/start-icon-dark.png"),
+	]);
+
+	const { keyboardHeight, isKeyboardVisible } = useKeyboard();
+
 	return (
 		<Container>
-			<ScrollView className="flex-1 p-6">
+			<View className="-top-0 absolute right-0 left-0 h-[200px] bg-primary" />
+			<ScrollView
+				className="flex-1"
+				style={{ marginBottom: isKeyboardVisible ? keyboardHeight : 0 }}
+			>
+				<View className="h-[150px] flex-row items-center">
+					<Image
+						source={{ uri: assets?.[0].uri }}
+						style={{
+							width: 75,
+							height: 75,
+						}}
+					/>
+					<Text className={cn("font-brand text-5xl text-background uppercase")}>
+						Hati Tayo
+					</Text>
+				</View>
+
 				<View className="gap-4 py-8">
 					<Text className="mb-2 font-geist-bold text-3xl text-foreground">
 						Sign up

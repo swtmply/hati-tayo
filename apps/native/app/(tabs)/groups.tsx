@@ -11,7 +11,7 @@ const GroupsPage = () => {
 
 	return (
 		<Container>
-			<Text className="mb-2 font-geist-bold text-3xl text-foreground">
+			<Text className="mb-2 font-geist-bold text-3xl text-foreground tracking-tighter">
 				Groups
 			</Text>
 

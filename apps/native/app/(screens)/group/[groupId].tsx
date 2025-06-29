@@ -1,13 +1,16 @@
 import { api } from "@hati-tayo/backend/convex/_generated/api";
 import type { Id } from "@hati-tayo/backend/convex/_generated/dataModel";
+import type { Transaction } from "@hati-tayo/backend/convex/types";
 import { useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
-import { Pressable, TouchableOpacity, View } from "react-native";
+import { Pressable, ScrollView, TouchableOpacity, View } from "react-native";
 import { Container } from "~/components/container";
+import CurrencyFormat from "~/components/currency-format";
 import TransactionCard, {
 	TransactionCardSkeleton,
 } from "~/components/transaction-card";
+import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { ChevronLeft } from "~/components/ui/icons";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
@@ -18,7 +21,7 @@ const GroupDetails = () => {
 		id: groupId as Id<"groups">,
 	});
 
-	if (group === undefined) {
+	if (group === undefined || group === null) {
 		return (
 			<Container>
 				<View className="flex-row items-center justify-between pt-12 pb-4">
@@ -46,7 +49,7 @@ const GroupDetails = () => {
 
 	return (
 		<Container>
-			<View className="flex-row items-center justify-between pt-12 pb-4">
+			<View className="flex-row items-center justify-between pb-4">
 				<TouchableOpacity
 					onPress={() => {
 						router.back();
@@ -54,24 +57,68 @@ const GroupDetails = () => {
 				>
 					<ChevronLeft className="text-primary" />
 				</TouchableOpacity>
-				<Text className="font-geist-semibold text-xl">{group?.name}</Text>
+				<Text className="font-geist-bold text-2xl tracking-tighter">
+					{group?.name}
+				</Text>
 				<ChevronLeft className="invisible" />
 			</View>
 
-			<Text className="font-geist-semibold text-xl">Transactions</Text>
+			<ScrollView>
+				<Text className="my-4 font-geist-bold tracking-tighter">Members</Text>
 
-			<View className="gap-2">
+				{group.participants.map((member) => {
+					const owed = member.shares.reduce((total, share) => {
+						if (share.status === "PAID") {
+							return total;
+						}
+						return total + share.amount;
+					}, 0);
+
+					return (
+						<View
+							key={member._id}
+							className="mb-2 flex-row items-center justify-between"
+						>
+							<View className="flex-row items-center gap-2">
+								<Avatar alt={member.name}>
+									<AvatarImage source={{ uri: member.image }} />
+								</Avatar>
+								<Text className="font-geist-semibold">{member.name}</Text>
+							</View>
+							{owed === 0 ? (
+								<Text className="text-muted-foreground">No debt</Text>
+							) : (
+								<View className="flex-row items-center gap-1">
+									<Text>Owes</Text>
+									<CurrencyFormat
+										amount={owed}
+										className="font-geist-bold text-destructive"
+									/>
+								</View>
+							)}
+						</View>
+					);
+				})}
+
+				<Text className="my-4 font-geist-bold tracking-tighter">
+					Recent Transactions
+				</Text>
+
 				{group.transactions.map((transaction) => (
 					<Pressable
 						onPress={() => {
 							router.push(`/transaction/${transaction._id}`);
 						}}
 						key={transaction._id}
+						className="mb-4"
 					>
-						<TransactionCard transaction={transaction} />
+						<TransactionCard
+							transaction={transaction as Transaction}
+							inGroupView
+						/>
 					</Pressable>
 				))}
-			</View>
+			</ScrollView>
 		</Container>
 	);
 };

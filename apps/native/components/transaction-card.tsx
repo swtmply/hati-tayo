@@ -1,35 +1,43 @@
 import type { Transaction } from "@hati-tayo/backend/convex/types";
-import { formatDistanceToNow } from "date-fns";
 import { router } from "expo-router";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import { cn } from "~/lib/utils";
 import CurrencyFormat from "./currency-format";
 import { Avatar, AvatarImage } from "./ui/avatar";
+import { ChevronRight } from "./ui/icons";
 import { Skeleton } from "./ui/skeleton";
 import { Text } from "./ui/text";
 
 interface TransactionCardProps {
 	transaction: Transaction;
+	inGroupView?: boolean;
 }
 
-const TransactionCard = ({ transaction }: TransactionCardProps) => {
+const TransactionCard = ({
+	transaction,
+	inGroupView,
+}: TransactionCardProps) => {
 	return (
 		<TouchableOpacity
 			onPress={() => {
 				router.push(`/transaction/${transaction._id}`);
 			}}
 			className={cn(
-				"flex-row justify-between rounded-lg border bg-card p-4",
-				transaction.isSettled ? "border-primary" : "border-red-400",
+				"flex-row justify-between rounded-xl border border-sidebar-border bg-sidebar p-4",
 			)}
 		>
-			<View className="gap-4">
-				<View className="flex-row items-center gap-2">
+			<View className={cn(inGroupView ? "gap-4" : "gap-1.5")}>
+				<View className="flex-col">
+					{!inGroupView && (
+						<Text className="font-geist-bold text-muted-foreground tracking-tighter">
+							{transaction.group?.name}
+						</Text>
+					)}
 					<Text
 						numberOfLines={1}
 						ellipsizeMode="tail"
-						className="max-w-36 font-geist-semibold text-xl tracking-tighter"
+						className="-mt-1 font-geist-bold text-xl tracking-tighter"
 					>
 						{transaction.name}
 					</Text>
@@ -53,35 +61,23 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
 					))}
 				</View>
 			</View>
-			<View className="flex-col items-end justify-between">
-				<View>
-					<View className="flex-row items-center justify-end gap-1">
-						<Text>{transaction.payer.name} paid</Text>
-
-						<CurrencyFormat
-							amount={transaction.amount}
-							className="font-geist-bold text-lg tracking-tighter"
-						/>
-					</View>
-					<View className="flex-row items-center justify-end gap-1">
-						<Text>
-							{transaction.share?.status === "PENDING" ? "You owe" : "You paid"}
-						</Text>
-						<CurrencyFormat
-							amount={transaction.share?.amount ?? 0}
-							className={cn(
-								"font-geist-bold text-lg tracking-tighter",
-								transaction.share?.status === "PENDING"
-									? "text-red-400"
-									: "text-primary",
-							)}
-						/>
-					</View>
-				</View>
-				<View>
-					<Text className="text-muted-foreground text-sm">
-						{formatDistanceToNow(transaction.createdAt, { addSuffix: true })}
+			<View className="flex-col justify-between">
+				<ChevronRight className="self-end text-muted-foreground" />
+				<View className="items-end">
+					<Text className="-mb-1 font-sans">
+						{transaction.share?.status === "PENDING"
+							? `You owe ${transaction.payer.name}`
+							: "You are owed"}
 					</Text>
+					<CurrencyFormat
+						amount={transaction.share?.amount ?? 0}
+						className={cn(
+							"font-geist-bold text-2xl tracking-tighter",
+							transaction.share?.status === "PENDING"
+								? "text-destructive"
+								: "text-primary",
+						)}
+					/>
 				</View>
 			</View>
 		</TouchableOpacity>

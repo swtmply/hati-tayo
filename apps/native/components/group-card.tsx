@@ -18,10 +18,10 @@ const GroupCard = ({ group }: GroupCardProps) => {
 			onPress={() => {
 				router.push(`/group/${group._id}`);
 			}}
-			className="flex-row justify-between rounded-lg border border-border bg-card p-4"
+			className="flex-row justify-between rounded-xl border border-sidebar-border bg-sidebar p-4"
 		>
-			<View className="gap-4">
-				<Text className="font-geist-semibold text-xl tracking-tighter">
+			<View className="gap-1.5">
+				<Text className="font-geist-bold text-xl tracking-tighter">
 					{group.name}
 				</Text>
 				<View className="-ml-2 flex-row items-center gap-2">
@@ -43,8 +43,8 @@ const GroupCard = ({ group }: GroupCardProps) => {
 				<CurrencyFormat
 					amount={group.totalOwed}
 					className={cn(
-						"text-right font-geist-semibold text-xl tracking-tighter",
-						group.totalOwed > 0 ? "text-red-400" : "text-primary",
+						"text-right font-geist-bold text-2xl tracking-tighter",
+						group.totalOwed > 0 ? "text-destructive" : "text-primary",
 					)}
 				/>
 				<Text className="text-muted-foreground text-sm">

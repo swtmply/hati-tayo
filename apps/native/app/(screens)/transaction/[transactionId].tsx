@@ -20,14 +20,14 @@ const TransactionDetails = () => {
 	const transaction = useQuery(api.transactions.getTransactionDetailsById, {
 		id: transactionId as Id<"transactions">,
 	});
-	const user = useQuery(api.auth.get);
+	const user = useQuery(api.users.get);
 
 	const [openIndex, setOpenIndex] = React.useState(-1);
 
-	if (transaction === undefined) {
+	if (transaction === undefined || transaction === null) {
 		return (
 			<Container>
-				<View className="flex-row items-center justify-between pt-12 pb-4">
+				<View className="flex-row items-center justify-between pb-4">
 					<TouchableOpacity
 						onPress={() => {
 							router.back();
@@ -76,7 +76,7 @@ const TransactionDetails = () => {
 
 	return (
 		<Container>
-			<View className="flex-row items-center justify-between pt-12 pb-4">
+			<View className="flex-row items-center justify-between pb-4">
 				<TouchableOpacity
 					onPress={() => {
 						router.back();
@@ -84,9 +84,14 @@ const TransactionDetails = () => {
 				>
 					<ChevronLeft className="text-primary" />
 				</TouchableOpacity>
-				<Text className="font-geist-semibold text-xl">
-					{transaction.group?.name} - {transaction.name}
-				</Text>
+				<View className="flex-col items-center">
+					<Text className="-mb-1 font-geist-bold text-muted-foreground tracking-tighter">
+						{transaction.group?.name}
+					</Text>
+					<Text className="-mt-1 font-geist-bold text-2xl tracking-tighter">
+						{transaction.name}
+					</Text>
+				</View>
 				<ChevronLeft className="invisible" />
 			</View>
 
@@ -116,14 +121,16 @@ const TransactionDetails = () => {
 						className="font-geist-extrabold text-4xl text-primary tracking-tighter"
 					/>
 				</View>
-				<View className="flex-col items-center">
-					<Text className="font-sans text-lg">You owe</Text>
+				{transaction.totalOwed > 0 && (
+					<View className="flex-col items-center">
+						<Text className="font-sans text-lg">You owe</Text>
 
-					<CurrencyFormat
-						amount={transaction.totalOwed}
-						className="font-geist-extrabold text-4xl text-red-400 tracking-tighter"
-					/>
-				</View>
+						<CurrencyFormat
+							amount={transaction.totalOwed}
+							className="font-geist-extrabold text-4xl text-destructive tracking-tighter"
+						/>
+					</View>
+				)}
 			</View>
 
 			<View>
@@ -154,7 +161,7 @@ const TransactionDetails = () => {
 										"font-geist-extrabold",
 										participant.share?.status === "PAID"
 											? "text-primary"
-											: "text-red-400",
+											: "text-destructive",
 									)}
 								/>
 							</Text>
@@ -169,7 +176,7 @@ const TransactionDetails = () => {
 						setOpenIndex(0);
 					}}
 				>
-					<Text>Settle Debts</Text>
+					<Text className="uppercase">Settle Payments</Text>
 				</Button>
 			)}
 
