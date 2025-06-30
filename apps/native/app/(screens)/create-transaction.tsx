@@ -14,6 +14,9 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem } from "~/components/ui/select";
 import { Text } from "~/components/ui/text";
+import PercentageSplitInputs from "~/components/transaction-splits/PercentageSplitInputs";
+import FixedAmountSplitInputs from "~/components/transaction-splits/FixedAmountSplitInputs";
+import SharesSplitInputs from "~/components/transaction-splits/SharesSplitInputs";
 import { useAppForm } from "~/hooks/useAppForm";
 import { useKeyboard } from "~/hooks/useKeyboard";
 import { cn } from "~/lib/utils";
@@ -632,70 +635,33 @@ const CreateTransactionForm = () => {
 						)}
 					</Form.Field>
 					<Form.Subscribe selector={(state) => state.values.selectedMembers}>
-						{(selectedMembers) => {
-							// Update splitDetails whenever selectedMembers or form's splitType change
+						{(selectedMembersValue) => {
+							// Effect to reset splitDetails when members or type change - remains here
 							React.useEffect(() => {
-								const currentSplitTypeFromForm = Form.getFieldValue("splitType");
-								const newSplitDetails = selectedMembers
-									.filter(member => member._id !== "") // Filter out placeholder member
+								const newSplitDetails = selectedMembersValue
+									.filter(member => member._id !== "")
 									.map(member => ({
-										userId: member._id,
-										value: "", // Always reset to empty for simplicity when members or type change
+										userId: member._id, // Ensure userId is part of the reset structure
+										value: "",
 									}));
 								Form.setFieldValue("splitDetails", newSplitDetails);
-								Form.validateField("splitDetails");
-							}, [selectedMembers, Form.state.values.splitType]); // Depend on form's splitType
+								// Optionally, trigger validation if needed, though individual field validation might handle it
+								// Form.validateField("splitDetails");
+							}, [selectedMembersValue, currentSplitType]); // currentSplitType is from the parent Form.Subscribe
 
-							if (selectedMembers.length === 0 || (selectedMembers.length === 1 && selectedMembers[0]._id === "")) {
-								return (
-									<Text className="text-center text-neutral-400">
-										Please select members to split with.
-									</Text>
-								);
+							// Conditional rendering of new components
+							if (currentSplitType === "PERCENTAGE") {
+								return <PercentageSplitInputs form={Form} selectedMembers={selectedMembersValue} detailsArrayPath="splitDetails" />;
 							}
-
-							return selectedMembers.map((member, index) => {
-								if (member._id === "") return null;
-								return (
-									<Form.Field key={member._id} name={`splitDetails[${index}].value`}>
-										{(field) => (
-											<View className="flex-row items-center gap-2">
-												<Avatar alt={member.name} className="h-8 w-8">
-													<AvatarImage source={{ uri: member.image }} />
-												</Avatar>
-												<Text className="w-1/3 flex-shrink font-geist-medium" numberOfLines={1} ellipsizeMode="tail">
-													{member.name}
-												</Text>
-												<Input
-													placeholder={
-														selectedSplitType === "PERCENTAGE"
-															? "%"
-															: selectedSplitType === "FIXED"
-																? "Amount"
-																: "Shares"
-													}
-													onChangeText={(text) => {
-														const numericValue = text.replace(/[^0-9.]/g, "");
-														// Ensure the specific item in splitDetails is updated
-														const updatedDetails = Form.state.values.splitDetails.map((detail, i) =>
-															i === index ? { ...detail, value: numericValue } : detail
-														);
-														Form.setFieldValue("splitDetails", updatedDetails);
-													}}
-													value={field.state.value} // Use field.state.value directly
-													keyboardType="numeric"
-													className="flex-1"
-												/>
-												{field.state.meta.touched && field.state.meta.errors && field.state.meta.errors.length > 0 ? (
-													<Text className="text-destructive text-xs w-full">
-														{field.state.meta.errors.join(", ")}
-													</Text>
-												) : null}
-											</View>
-										)}
-									</Form.Field>
-								);
-							});
+							if (currentSplitType === "FIXED") {
+								return <FixedAmountSplitInputs form={Form} selectedMembers={selectedMembersValue} detailsArrayPath="splitDetails" />;
+							}
+							if (currentSplitType === "SHARES") {
+								return <SharesSplitInputs form={Form} selectedMembers={selectedMembersValue} detailsArrayPath="splitDetails" />;
+							}
+							// If no specific component matches (e.g., for "EQUAL" or unexpected type), render nothing here.
+							// The parent condition `currentSplitType !== "EQUAL"` already handles not rendering this block for "EQUAL".
+							return null;
 						}}
 					</Form.Subscribe>
 				</View>
