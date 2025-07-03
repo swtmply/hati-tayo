@@ -92,13 +92,15 @@ export const deleteUser = mutation({
 
 		// A more robust way to check participation
 		const allTransactions = await ctx.db.query("transactions").collect();
-		const transactionsInvolvingUser = allTransactions.filter(
-			(tx) =>
-				tx.payerId === userId || tx.participants.some((pId) => pId === userId),
-		);
+		const transactionsInvolvingUser = allTransactions.filter((tx) => {
+			if (tx.splitType === "EQUAL") {
+				return tx.payerId === userId;
+			}
+			return tx.participants.some((pId) => pId === userId);
+		});
 
 		for (const transaction of transactionsInvolvingUser) {
-			if (transaction.payerId === userId) {
+			if (transaction.splitType === "EQUAL" && transaction.payerId === userId) {
 				// User is the payer, delete this transaction and its shares
 				const sharesForThisTransaction = await ctx.db
 					.query("transactionShares")

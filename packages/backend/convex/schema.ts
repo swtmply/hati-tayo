@@ -2,6 +2,52 @@ import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+export const equalSplitValidator = v.object({
+	name: v.string(),
+	groupId: v.id("groups"),
+	participants: v.array(v.id("users")),
+	amount: v.number(),
+	splitType: v.literal("EQUAL"),
+	payerId: v.id("users"),
+	date: v.number(),
+});
+
+export const percentageSplitValidator = v.object({
+	name: v.string(),
+	groupId: v.id("groups"),
+	participants: v.array(v.id("users")),
+	amount: v.number(),
+	splitType: v.literal("PERCENTAGE"),
+	percentages: v.array(
+		v.object({
+			userId: v.id("users"),
+			percentage: v.number(),
+		}),
+	),
+	date: v.number(),
+});
+
+export const fixedSplitValidator = v.object({
+	name: v.string(),
+	groupId: v.id("groups"),
+	participants: v.array(v.id("users")),
+	amount: v.number(),
+	splitType: v.literal("FIXED"),
+	fixedAmounts: v.array(
+		v.object({
+			userId: v.id("users"),
+			amount: v.number(),
+		}),
+	),
+	date: v.number(),
+});
+
+export const transactionSchema = v.union(
+	equalSplitValidator,
+	percentageSplitValidator,
+	fixedSplitValidator,
+);
+
 export default defineSchema({
 	...authTables,
 	users: defineTable({
@@ -24,20 +70,7 @@ export default defineSchema({
 		createdAt: v.number(),
 		updatedAt: v.number(),
 	}),
-	transactions: defineTable({
-		groupId: v.id("groups"),
-		payerId: v.id("users"),
-		participants: v.array(v.id("users")),
-
-		amount: v.number(),
-		date: v.number(),
-		name: v.string(),
-		splitType: v.string(),
-		image: v.optional(v.string()),
-
-		createdAt: v.number(),
-		updatedAt: v.number(),
-	})
+	transactions: defineTable(transactionSchema)
 		.index("by_payerId", ["payerId"])
 		.index("by_groupId", ["groupId"]),
 	transactionShares: defineTable({

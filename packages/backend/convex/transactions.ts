@@ -19,7 +19,11 @@ export const transactionsOfCurrentUser = query({
 			.query("transactions")
 			.order("desc")) {
 			if (transaction.participants.includes(user._id)) {
-				const payer = await ctx.db.get(transaction.payerId);
+				let payer = null;
+				if (transaction.splitType === "EQUAL") {
+					payer = await ctx.db.get(transaction.payerId);
+				}
+
 				const members = [];
 				const share = await ctx.db
 					.query("transactionShares")
@@ -65,10 +69,6 @@ export const transactionsOfCurrentUser = query({
 					});
 				}
 
-				if (payer === null) {
-					continue;
-				}
-
 				transactions.push({
 					...transaction,
 					payer,
@@ -102,7 +102,11 @@ export const getTransactionDetailsById = query({
 			return null;
 		}
 
-		const payer = await ctx.db.get(transaction.payerId);
+		let payer = null;
+		if (transaction.splitType === "EQUAL") {
+			payer = await ctx.db.get(transaction.payerId);
+		}
+
 		const group = await ctx.db.get(transaction.groupId);
 		const participants = [];
 
@@ -129,10 +133,6 @@ export const getTransactionDetailsById = query({
 			});
 		}
 
-		if (payer === null) {
-			return null;
-		}
-
 		return {
 			...transaction,
 			payer,
@@ -146,22 +146,74 @@ export const getTransactionDetailsById = query({
 	},
 });
 
+const equalSplitValidator = v.object({
+	name: v.string(),
+	groupName: v.optional(v.string()),
+	groupId: v.optional(v.id("groups")),
+	participants: v.array(
+		v.object({
+			_id: v.string(),
+			name: v.string(),
+			email: v.optional(v.string()),
+			phoneNumber: v.optional(v.string()),
+		}),
+	),
+	amount: v.number(),
+	splitType: v.literal("EQUAL"),
+	payerId: v.string(),
+});
+
+const percentageSplitValidator = v.object({
+	name: v.string(),
+	groupName: v.optional(v.string()),
+	groupId: v.optional(v.id("groups")),
+	participants: v.array(
+		v.object({
+			_id: v.string(),
+			name: v.string(),
+			email: v.optional(v.string()),
+			phoneNumber: v.optional(v.string()),
+		}),
+	),
+	amount: v.number(),
+	splitType: v.literal("PERCENTAGE"),
+	percentages: v.array(
+		v.object({
+			userId: v.string(),
+			percentage: v.number(),
+		}),
+	),
+});
+
+const fixedSplitValidator = v.object({
+	name: v.string(),
+	groupName: v.optional(v.string()),
+	groupId: v.optional(v.id("groups")),
+	participants: v.array(
+		v.object({
+			_id: v.string(),
+			name: v.string(),
+			email: v.optional(v.string()),
+			phoneNumber: v.optional(v.string()),
+		}),
+	),
+	amount: v.number(),
+	splitType: v.literal("FIXED"),
+	fixedAmounts: v.array(
+		v.object({
+			userId: v.string(),
+			amount: v.number(),
+		}),
+	),
+});
+
 export const createTransaction = mutation({
 	args: {
-		name: v.string(),
-		groupName: v.optional(v.string()),
-		groupId: v.optional(v.id("groups")),
-		participants: v.array(
-			v.object({
-				_id: v.string(),
-				name: v.string(),
-				email: v.optional(v.string()),
-				phoneNumber: v.optional(v.string()),
-			}),
+		data: v.union(
+			equalSplitValidator,
+			percentageSplitValidator,
+			fixedSplitValidator,
 		),
-		amount: v.number(),
-		splitType: v.string(),
-		payerId: v.string(),
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
@@ -173,9 +225,11 @@ export const createTransaction = mutation({
 
 		const participantsIds = [] as Id<"users">[];
 		let payerId: Id<"users"> = "" as Id<"users">;
+		const percentages: { userId: Id<"users">; percentage: number }[] = [];
+		const fixedAmounts: { userId: Id<"users">; amount: number }[] = [];
 
 		// Insert users if they are not in the database
-		for (const participant of args.participants) {
+		for (const participant of args.data.participants) {
 			if (
 				participant._id.startsWith("anonymous-user-") ||
 				participant._id.startsWith("contact-")
@@ -189,67 +243,166 @@ export const createTransaction = mutation({
 					updatedAt: Date.now(),
 				});
 
-				if (participant._id === args.payerId) {
+				if (args.data.splitType === "EQUAL") {
 					payerId = id;
+				}
+
+				if (args.data.splitType === "PERCENTAGE") {
+					const percentage = args.data.percentages.find(
+						(p) => p.userId === participant._id,
+					);
+					percentages.push({
+						userId: id,
+						percentage: percentage?.percentage ?? 0,
+					});
+				}
+
+				if (args.data.splitType === "FIXED") {
+					const fixedAmount = args.data.fixedAmounts.find(
+						(p) => p.userId === participant._id,
+					);
+					fixedAmounts.push({
+						userId: id,
+						amount: fixedAmount?.amount ?? 0,
+					});
 				}
 
 				participantsIds.push(id);
 			} else {
-				participantsIds.push(participant._id as Id<"users">);
-
-				if (participant._id === args.payerId) {
+				if (args.data.splitType === "EQUAL") {
 					payerId = participant._id as Id<"users">;
 				}
+
+				if (args.data.splitType === "PERCENTAGE") {
+					const percentage = args.data.percentages.find(
+						(p) => p.userId === participant._id,
+					);
+					percentages.push({
+						userId: participant._id as Id<"users">,
+						percentage: percentage?.percentage ?? 0,
+					});
+				}
+
+				if (args.data.splitType === "FIXED") {
+					const fixedAmount = args.data.fixedAmounts.find(
+						(p) => p.userId === participant._id,
+					);
+					fixedAmounts.push({
+						userId: participant._id as Id<"users">,
+						amount: fixedAmount?.amount ?? 0,
+					});
+				}
+
+				participantsIds.push(participant._id as Id<"users">);
 			}
 		}
 
-		if (args.groupId === undefined) {
+		if (args.data.groupId === undefined) {
 			// Create group if it doesn't exist
-			if (args.groupName === undefined) {
+			if (args.data.groupName === undefined) {
 				return null;
 			}
 
-			if (args.groupName === "") {
+			if (args.data.groupName === "") {
 				return null;
 			}
 
 			// Create group
 			const groupId = await ctx.db.insert("groups", {
-				name: args.groupName,
+				name: args.data.groupName,
 				members: participantsIds,
 				transactions: [],
 				createdAt: Date.now(),
 				updatedAt: Date.now(),
 			});
 
-			args.groupId = groupId;
+			args.data.groupId = groupId;
 		}
 
-		// Create transaction
-		const transaction = await ctx.db.insert("transactions", {
-			name: args.name,
-			groupId: args.groupId,
-			payerId,
-			participants: participantsIds,
-			amount: args.amount,
-			date: Date.now(),
-			splitType: args.splitType,
-			createdAt: Date.now(),
-			updatedAt: Date.now(),
-		});
+		let transactionId: Id<"transactions">;
 
-		// Create transaction shares
-		for (const participant of participantsIds) {
-			await ctx.db.insert("transactionShares", {
-				transactionId: transaction,
-				userId: participant,
-				status: payerId === participant ? "PAID" : "PENDING",
-				amount: args.amount / participantsIds.length,
-				createdAt: Date.now(),
-				updatedAt: Date.now(),
+		// Create transaction for different split types
+		if (args.data.splitType === "EQUAL") {
+			transactionId = await ctx.db.insert("transactions", {
+				name: args.data.name,
+				groupId: args.data.groupId,
+				participants: participantsIds,
+				amount: args.data.amount,
+				splitType: args.data.splitType,
+				payerId,
+				date: Date.now(),
 			});
+
+			for (const participantId of participantsIds) {
+				await ctx.db.insert("transactionShares", {
+					transactionId,
+					userId: participantId,
+					status: "PENDING",
+					amount: args.data.amount / participantsIds.length,
+					createdAt: Date.now(),
+					updatedAt: Date.now(),
+				});
+			}
 		}
 
-		return transaction;
+		if (args.data.splitType === "PERCENTAGE") {
+			transactionId = await ctx.db.insert("transactions", {
+				name: args.data.name,
+				groupId: args.data.groupId,
+				participants: participantsIds,
+				amount: args.data.amount,
+				splitType: args.data.splitType,
+				date: Date.now(),
+				percentages,
+			});
+
+			for (const participantId of participantsIds) {
+				const share = percentages.find((p) => p.userId === participantId);
+
+				if (share === undefined) {
+					continue;
+				}
+
+				await ctx.db.insert("transactionShares", {
+					transactionId,
+					userId: participantId,
+					status: "PENDING",
+					amount: (share.percentage / 100) * args.data.amount,
+					createdAt: Date.now(),
+					updatedAt: Date.now(),
+				});
+			}
+		}
+
+		if (args.data.splitType === "FIXED") {
+			transactionId = await ctx.db.insert("transactions", {
+				name: args.data.name,
+				groupId: args.data.groupId,
+				participants: participantsIds,
+				amount: args.data.amount,
+				splitType: args.data.splitType,
+				date: Date.now(),
+				fixedAmounts,
+			});
+
+			for (const participantId of participantsIds) {
+				const share = fixedAmounts.find((p) => p.userId === participantId);
+
+				if (share === undefined) {
+					continue;
+				}
+
+				await ctx.db.insert("transactionShares", {
+					transactionId,
+					userId: participantId,
+					status: "PENDING",
+					amount: share.amount,
+					createdAt: Date.now(),
+					updatedAt: Date.now(),
+				});
+			}
+		}
+
+		return args;
 	},
 });
