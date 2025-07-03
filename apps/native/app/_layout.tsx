@@ -18,7 +18,6 @@ import {
 } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
 import { ConvexReactClient } from "convex/react";
-import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -26,6 +25,7 @@ import { remapProps } from "nativewind";
 import React, { useRef } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import AppStack from "~/components/app-stack";
 import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/use-color-scheme";
@@ -97,7 +97,6 @@ export default function RootLayout() {
 		setAndroidNavigationBar(colorScheme);
 		setIsColorSchemeLoaded(true);
 		hasMounted.current = true;
-		SplashScreen.hide();
 	}, []);
 
 	if (!isColorSchemeLoaded || !fontsLoaded) {
@@ -116,21 +115,7 @@ export default function RootLayout() {
 			<ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
 				<StatusBar style={isDarkColorScheme ? "light" : "dark"} />
 				<GestureHandlerRootView style={{ flex: 1 }}>
-					<Stack
-						screenOptions={{
-							headerShown: false,
-							animation: "ios_from_right",
-						}}
-						initialRouteName="(tabs)"
-					>
-						<Stack.Screen name="(tabs)" />
-						<Stack.Screen name="(auth)" />
-						<Stack.Screen
-							name="(screens)/create-transaction"
-							options={{ presentation: "modal" }}
-						/>
-						<Stack.Screen name="(screens)/transaction/[transactionId]" />
-					</Stack>
+					<AppStack />
 				</GestureHandlerRootView>
 				<PortalHost />
 			</ThemeProvider>

@@ -1,14 +1,6 @@
-import { api } from "@hati-tayo/backend/convex/_generated/api";
-import { useQuery } from "convex/react";
-import { Redirect, Stack } from "expo-router";
+import { Stack } from "expo-router";
 
 export default function AuthLayout() {
-	const isSignedIn = useQuery(api.auth.isAuthenticated);
-
-	if (isSignedIn) {
-		return <Redirect href={"/(tabs)"} />;
-	}
-
 	return (
 		<Stack
 			initialRouteName="sign-in"
