@@ -50,7 +50,7 @@ const TransactionCard = ({
 							key={member._id}
 							className={cn(
 								"-ml-6 rounded-full",
-								transaction.payerId === member._id
+								transaction.payer?._id === member._id
 									? "border-2 border-primary"
 									: "",
 								index === 0 ? "ml-0" : "",
@@ -65,9 +65,19 @@ const TransactionCard = ({
 				<ChevronRight className="self-end text-muted-foreground" />
 				<View className="items-end">
 					<Text className="-mb-1 font-sans">
-						{transaction.share?.status === "PENDING"
-							? `You owe ${transaction.payer.name}`
-							: "You are owed"}
+						{transaction.splitType === "EQUAL"
+							? transaction.share?.status === "PENDING"
+								? `You owe ${transaction.payer?.name}`
+								: "You are owed"
+							: transaction.splitType === "PERCENTAGE"
+								? transaction.share?.status === "PENDING"
+									? "You owe a percentage of"
+									: "You owed a percentage of"
+								: transaction.splitType === "FIXED"
+									? transaction.share?.status === "PENDING"
+										? "You owe a fixed amount of"
+										: "You owed a fixed amount of"
+									: ""}
 					</Text>
 					<CurrencyFormat
 						amount={transaction.share?.amount ?? 0}

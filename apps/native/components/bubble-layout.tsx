@@ -100,16 +100,20 @@ export const FirstBubble = React.memo(
 				style={animatedStyle}
 				className="absolute top-12 left-12 aspect-square w-44 items-center justify-center gap-0.5 rounded-full bg-accent"
 			>
-				<Image
-					source={{
-						uri: transaction.payer.image,
-					}}
-					style={{
-						height: 48,
-						width: 48,
-						borderRadius: 50,
-					}}
-				/>
+				{transaction.payer ? (
+					<Image
+						source={{
+							uri: transaction.payer?.image,
+						}}
+						style={{
+							height: 48,
+							width: 48,
+							borderRadius: 50,
+						}}
+					/>
+				) : (
+					<Text className="text-5xl">✨</Text>
+				)}
 				<Text className="-mb-1 text-muted-foreground text-xs">
 					{transaction.name}
 				</Text>
@@ -178,16 +182,21 @@ const SecondBubble = React.memo(({ duo, transaction }: SecondBubbleProps) => {
 			style={animatedStyle}
 			className="absolute top-4 right-12 aspect-square w-32 items-center justify-center rounded-full bg-accent"
 		>
-			<Image
-				source={{
-					uri: transaction.payer.image,
-				}}
-				style={{
-					height: 48,
-					width: 48,
-					borderRadius: 50,
-				}}
-			/>
+			{transaction.payer ? (
+				<Image
+					source={{
+						uri: transaction.payer?.image,
+					}}
+					style={{
+						height: 48,
+						width: 48,
+						borderRadius: 50,
+					}}
+				/>
+			) : (
+				<Text className="text-5xl">✨</Text>
+			)}
+
 			<Text className="-mb-1 text-muted-foreground text-xs">
 				{transaction.name}
 			</Text>
@@ -245,16 +254,20 @@ const ThirdBubble = React.memo(
 				style={animatedStyle}
 				className="absolute h-full max-h-28 w-28 items-center justify-center rounded-full bg-accent"
 			>
-				<Image
-					source={{
-						uri: transaction.payer.image,
-					}}
-					style={{
-						height: 48,
-						width: 48,
-						borderRadius: 50,
-					}}
-				/>
+				{transaction.payer ? (
+					<Image
+						source={{
+							uri: transaction.payer?.image,
+						}}
+						style={{
+							height: 48,
+							width: 48,
+							borderRadius: 50,
+						}}
+					/>
+				) : (
+					<Text className="text-5xl">✨</Text>
+				)}
 				<Text className="-mb-1 text-muted-foreground text-xs">
 					{transaction.name}
 				</Text>

@@ -15,6 +15,25 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
 import { cn } from "~/lib/utils";
 
+const splitTypeToText = (splitType: "EQUAL" | "PERCENTAGE" | "FIXED") => {
+	switch (splitType) {
+		case "EQUAL":
+			return "Equally";
+		case "PERCENTAGE":
+			return "By Percentage";
+		case "FIXED":
+			return "By Fixed Amount";
+	}
+};
+
+const getPercentage = (
+	userId: Id<"users">,
+	percentages: { userId: Id<"users">; percentage: number }[],
+) => {
+	return percentages.find((percentage) => percentage.userId === userId)
+		?.percentage;
+};
+
 const TransactionDetails = () => {
 	const { transactionId } = useLocalSearchParams();
 	const transaction = useQuery(api.transactions.getTransactionDetailsById, {
@@ -96,16 +115,20 @@ const TransactionDetails = () => {
 			</View>
 
 			<View className="items-center justify-center gap-2">
-				<Image
-					style={{
-						aspectRatio: 1,
-						width: 100,
-						height: 100,
-						borderRadius: 100,
-					}}
-					source={transaction.payer.image}
-					transition={1000}
-				/>
+				{transaction.payer ? (
+					<Image
+						style={{
+							aspectRatio: 1,
+							width: 100,
+							height: 100,
+							borderRadius: 100,
+						}}
+						source={transaction.payer.image}
+						transition={1000}
+					/>
+				) : (
+					<Text className="text-5xl">✨</Text>
+				)}
 			</View>
 
 			{/* MARK: Transaction Summary
@@ -113,7 +136,13 @@ const TransactionDetails = () => {
 			<View className="mb-4 flex-row items-center justify-around">
 				<View className="flex-col items-center justify-center">
 					<Text className="font-geist-semibold text-lg">
-						{transaction.payer.name} paid
+						{transaction.splitType === "EQUAL"
+							? `${transaction.payer?.name} paid`
+							: transaction.splitType === "PERCENTAGE"
+								? "Total amount"
+								: transaction.splitType === "FIXED"
+									? "Total amount"
+									: ""}
 					</Text>
 
 					<CurrencyFormat
@@ -134,7 +163,9 @@ const TransactionDetails = () => {
 			</View>
 
 			<View>
-				<Text className="font-geist-bold tracking-tighter">Members</Text>
+				<Text className="font-geist-bold tracking-tighter">
+					Members - {splitTypeToText(transaction.splitType)}
+				</Text>
 			</View>
 
 			<View className="flex-col gap-2">
@@ -151,6 +182,12 @@ const TransactionDetails = () => {
 						<View className="flex-1 flex-row items-center justify-between">
 							<Text className="font-geist-semibold text-lg">
 								{participant.name}
+								{transaction.splitType === "PERCENTAGE"
+									? `- ${getPercentage(
+											participant._id,
+											transaction.percentages ?? [],
+										)}%`
+									: ""}
 							</Text>
 							<Text className="font-sans">
 								{participant.share?.status === "PAID" ? "Paid " : "Owed "}
@@ -170,20 +207,22 @@ const TransactionDetails = () => {
 				))}
 			</View>
 
-			{transaction.payer._id === user?._id && !transaction.isSettled && (
-				<Button
-					onPress={() => {
-						setOpenIndex(0);
-					}}
-				>
-					<Text className="uppercase">Settle Payments</Text>
-				</Button>
-			)}
+			{transaction.payer &&
+				transaction.payer._id === user?._id &&
+				!transaction.isSettled && (
+					<Button
+						onPress={() => {
+							setOpenIndex(0);
+						}}
+					>
+						<Text className="uppercase">Settle Payments</Text>
+					</Button>
+				)}
 
 			<SettleTransactionFormSheet
 				index={openIndex}
 				members={transaction.participants.filter(
-					(participant) => participant._id !== transaction.payer._id,
+					(participant) => participant._id !== transaction.payer?._id,
 				)}
 				onClose={() => {
 					setOpenIndex(-1);

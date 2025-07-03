@@ -141,8 +141,6 @@ const AddAnonymousMemberDialog = ({
 				image: `https://ui-avatars.com/api/?background=random&name=${userName.replace(" ", "+")}`,
 				email: userEmail,
 				phoneNumber: userPhoneNumber,
-				groups: [],
-				transactions: [],
 				createdAt: new Date().getTime(),
 				updatedAt: new Date().getTime(),
 			},
