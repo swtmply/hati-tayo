@@ -65,19 +65,9 @@ const TransactionCard = ({
 				<ChevronRight className="self-end text-muted-foreground" />
 				<View className="items-end">
 					<Text className="-mb-1 font-sans">
-						{transaction.splitType === "EQUAL"
-							? transaction.share?.status === "PENDING"
-								? `You owe ${transaction.payer?.name}`
-								: "You are owed"
-							: transaction.splitType === "PERCENTAGE"
-								? transaction.share?.status === "PENDING"
-									? "You owe a percentage of"
-									: "You owed a percentage of"
-								: transaction.splitType === "FIXED"
-									? transaction.share?.status === "PENDING"
-										? "You owe a fixed amount of"
-										: "You owed a fixed amount of"
-									: ""}
+						{transaction.share?.status === "PENDING"
+							? "You owe"
+							: "You are owed"}
 					</Text>
 					<CurrencyFormat
 						amount={transaction.share?.amount ?? 0}

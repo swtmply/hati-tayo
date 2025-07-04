@@ -30,7 +30,7 @@ export const transactionsOfCurrentUser = query({
 					.filter((q) => q.eq(q.field("userId"), user._id))
 					.unique();
 
-				if (payer?._id === user._id && share !== null) {
+				if (share !== null) {
 					// get the total amount of pending shares
 					const pendingShares = await ctx.db
 						.query("transactionShares")
