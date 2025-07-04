@@ -9,6 +9,7 @@ import {
 	CircleCheck,
 	Plus,
 	Rainbow,
+	Trash,
 	X,
 } from "lucide-react-native";
 import { cssInterop } from "nativewind";
@@ -35,6 +36,7 @@ iconWithClassName(Bell);
 iconWithClassName(Plus);
 iconWithClassName(ChevronLeft);
 iconWithClassName(ChevronRight);
+iconWithClassName(Trash);
 
 export {
 	Bell,
@@ -46,5 +48,6 @@ export {
 	CircleCheck,
 	Plus,
 	Rainbow,
+	Trash,
 	X,
 };

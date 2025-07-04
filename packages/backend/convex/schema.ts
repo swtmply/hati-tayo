@@ -42,10 +42,33 @@ export const fixedSplitValidator = v.object({
 	date: v.number(),
 });
 
+export const sharedSplitValidator = v.object({
+	name: v.string(),
+	groupId: v.id("groups"),
+	participants: v.array(v.id("users")),
+	amount: v.number(),
+	splitType: v.literal("SHARED"),
+	items: v.array(
+		v.object({
+			participantIds: v.array(v.id("users")),
+			name: v.string(),
+			amount: v.number(),
+		}),
+	),
+	sharedAmounts: v.array(
+		v.object({
+			userId: v.id("users"),
+			amount: v.number(),
+		}),
+	),
+	date: v.number(),
+});
+
 export const transactionSchema = v.union(
 	equalSplitValidator,
 	percentageSplitValidator,
 	fixedSplitValidator,
+	sharedSplitValidator,
 );
 
 export default defineSchema({

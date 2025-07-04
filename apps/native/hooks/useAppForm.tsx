@@ -4,7 +4,7 @@ import { Input } from "~/components/ui/input";
 
 export const { fieldContext, formContext } = createFormHookContexts();
 
-export const { useAppForm } = createFormHook({
+export const { useAppForm, withForm } = createFormHook({
 	fieldComponents: {
 		Input,
 	},

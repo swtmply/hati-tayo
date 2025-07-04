@@ -207,12 +207,42 @@ const fixedSplitValidator = v.object({
 	),
 });
 
+const sharedSplitValidator = v.object({
+	name: v.string(),
+	groupName: v.optional(v.string()),
+	groupId: v.optional(v.id("groups")),
+	participants: v.array(
+		v.object({
+			_id: v.string(),
+			name: v.string(),
+			email: v.optional(v.string()),
+			phoneNumber: v.optional(v.string()),
+		}),
+	),
+	amount: v.number(),
+	splitType: v.literal("SHARED"),
+	items: v.array(
+		v.object({
+			participantIds: v.array(v.string()),
+			name: v.string(),
+			amount: v.number(),
+		}),
+	),
+	sharedAmounts: v.array(
+		v.object({
+			userId: v.string(),
+			amount: v.number(),
+		}),
+	),
+});
+
 export const createTransaction = mutation({
 	args: {
 		data: v.union(
 			equalSplitValidator,
 			percentageSplitValidator,
 			fixedSplitValidator,
+			sharedSplitValidator,
 		),
 	},
 	handler: async (ctx, args) => {
@@ -227,6 +257,7 @@ export const createTransaction = mutation({
 		let payerId: Id<"users"> = "" as Id<"users">;
 		const percentages: { userId: Id<"users">; percentage: number }[] = [];
 		const fixedAmounts: { userId: Id<"users">; amount: number }[] = [];
+		const sharedAmounts: { userId: Id<"users">; amount: number }[] = [];
 
 		// Insert users if they are not in the database
 		for (const participant of args.data.participants) {
@@ -267,6 +298,16 @@ export const createTransaction = mutation({
 					});
 				}
 
+				if (args.data.splitType === "SHARED") {
+					const sharedAmount = args.data.sharedAmounts.find(
+						(p) => p.userId === participant._id,
+					);
+					sharedAmounts.push({
+						userId: id,
+						amount: sharedAmount?.amount ?? 0,
+					});
+				}
+
 				participantsIds.push(id);
 			} else {
 				if (args.data.splitType === "EQUAL") {
@@ -290,6 +331,16 @@ export const createTransaction = mutation({
 					fixedAmounts.push({
 						userId: participant._id as Id<"users">,
 						amount: fixedAmount?.amount ?? 0,
+					});
+				}
+
+				if (args.data.splitType === "SHARED") {
+					const sharedAmount = args.data.sharedAmounts.find(
+						(p) => p.userId === participant._id,
+					);
+					sharedAmounts.push({
+						userId: participant._id as Id<"users">,
+						amount: sharedAmount?.amount ?? 0,
 					});
 				}
 
@@ -387,6 +438,39 @@ export const createTransaction = mutation({
 
 			for (const participantId of participantsIds) {
 				const share = fixedAmounts.find((p) => p.userId === participantId);
+
+				if (share === undefined) {
+					continue;
+				}
+
+				await ctx.db.insert("transactionShares", {
+					transactionId,
+					userId: participantId,
+					status: "PENDING",
+					amount: share.amount,
+					createdAt: Date.now(),
+					updatedAt: Date.now(),
+				});
+			}
+		}
+
+		if (args.data.splitType === "SHARED") {
+			transactionId = await ctx.db.insert("transactions", {
+				name: args.data.name,
+				groupId: args.data.groupId,
+				participants: participantsIds,
+				amount: args.data.amount,
+				splitType: args.data.splitType,
+				date: Date.now(),
+				items: args.data.items.map((item) => ({
+					...item,
+					participantIds: item.participantIds.map((id) => id as Id<"users">),
+				})),
+				sharedAmounts,
+			});
+
+			for (const participantId of participantsIds) {
+				const share = sharedAmounts.find((p) => p.userId === participantId);
 
 				if (share === undefined) {
 					continue;

@@ -1,17 +1,18 @@
 import { api } from "@hati-tayo/backend/convex/_generated/api";
 import type { Id } from "@hati-tayo/backend/convex/_generated/dataModel";
 import * as SelectPrimitive from "@rn-primitives/select";
-import { useStore } from "@tanstack/react-form";
+import { formOptions, useStore } from "@tanstack/react-form";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
 import React from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { z } from "zod";
 import AddMemberFormSheet from "~/components/add-member-form-sheet";
+import AddMemberToShareFormSheet from "~/components/add-member-to-share-form-sheet";
 import { Container } from "~/components/container";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, CircleCheck, Plus } from "~/components/ui/icons";
+import { ChevronLeft, CircleCheck, Plus, Trash } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem } from "~/components/ui/select";
@@ -19,11 +20,13 @@ import { Text } from "~/components/ui/text";
 import { useAppForm } from "~/hooks/useAppForm";
 import { useKeyboard } from "~/hooks/useKeyboard";
 import { cn } from "~/lib/utils";
+import useSelectedShareFieldStore from "~/store/share-split";
 
 const SPLIT_TYPES = [
 	{ value: "EQUAL", label: "Equal" },
 	{ value: "PERCENTAGE", label: "Percentage" },
 	{ value: "FIXED", label: "Fixed" },
+	{ value: "SHARED", label: "Shared" },
 ];
 
 const baseSplitSchema = z.object({
@@ -97,13 +100,24 @@ const fixedSplitSchema = baseSplitSchema.extend({
 	),
 });
 
-type SplitMember = z.infer<typeof baseSplitSchema>["members"][number];
+const sharedSplitSchema = baseSplitSchema.extend({
+	splitType: z.literal("SHARED"),
+	items: z.array(
+		z.object({
+			participantIds: z.array(z.string()),
+			name: z.string(),
+			amount: z.number().min(1, "Amount must be at least 1."),
+		}),
+	),
+});
 
+export type SplitMember = z.infer<typeof baseSplitSchema>["members"][number];
 const splitSchema = z
 	.discriminatedUnion("splitType", [
 		equalSplitSchema,
 		percentageSplitSchema,
 		fixedSplitSchema,
+		sharedSplitSchema,
 	])
 	.superRefine((data, ctx) => {
 		if (
@@ -118,18 +132,41 @@ const splitSchema = z
 		}
 	});
 
+export type SplitForm = z.infer<typeof splitSchema>;
+
+export const createTransactionFormOpts = formOptions({
+	defaultValues: {
+		groupName: "",
+		groupId: "",
+		transactionName: "",
+		amount: "",
+		members: [] as SplitMember[],
+		selectedMembers: [] as SplitMember[],
+		splitType: "EQUAL",
+		payer: "",
+		percentages: [] as { userId: string; percentage: number }[],
+		fixedAmounts: [] as { userId: string; amount: number }[],
+		items: [{ amount: 0, name: "", participantIds: [] }] as {
+			participantIds: string[];
+			name: string;
+			amount: number;
+		}[],
+	},
+});
+
 const CreateTransactionForm = () => {
 	const triggerRef = React.useRef<SelectPrimitive.TriggerRef>(null);
 	const { dismissKeyboard } = useKeyboard();
 
 	const [openFormSheet, setOpenFormSheet] = React.useState<number>(-1);
-	const [splitType, setSplitType] = React.useState<
-		"EQUAL" | "PERCENTAGE" | "FIXED"
-	>("EQUAL");
 
 	const groups = useQuery(api.groups.groupsOfCurrentUserWithMembers);
 	const user = useQuery(api.users.get);
 	const createTransaction = useMutation(api.transactions.createTransaction);
+
+	const setSelectedShareField = useSelectedShareFieldStore(
+		(state) => state.setSelectedShareField,
+	);
 
 	// MARK: Form
 	const form = useAppForm({
@@ -152,6 +189,11 @@ const CreateTransactionForm = () => {
 			payer: "",
 			percentages: [] as { userId: string; percentage: number }[],
 			fixedAmounts: [] as { userId: string; amount: number }[],
+			items: [{ amount: 0, name: "", participantIds: [] }] as {
+				participantIds: string[];
+				name: string;
+				amount: number;
+			}[],
 		},
 		validators: {
 			onSubmit: ({ value }) => {
@@ -228,6 +270,45 @@ const CreateTransactionForm = () => {
 				});
 			}
 
+			if (value.splitType === "SHARED") {
+				const memberTotals = new Map<string, number>();
+
+				for (const item of value.items) {
+					if (item.participantIds.length > 0) {
+						const share = item.amount / item.participantIds.length;
+						for (const participantId of item.participantIds) {
+							const currentTotal = memberTotals.get(participantId) ?? 0;
+							memberTotals.set(participantId, currentTotal + share);
+						}
+					}
+				}
+
+				const sharedAmounts = Array.from(memberTotals.entries()).map(
+					([userId, amount]) => ({ userId, amount }),
+				);
+
+				createTransaction({
+					data: {
+						amount: Number.parseFloat(value.amount),
+						name: value.transactionName,
+						splitType: value.splitType,
+						groupId:
+							value.groupId === ""
+								? undefined
+								: (value.groupId as Id<"groups">),
+						groupName: value.groupName,
+						participants: value.selectedMembers.map((member) => ({
+							_id: member._id,
+							name: member.name,
+							email: member.email,
+							phoneNumber: member.phoneNumber,
+						})),
+						items: value.items,
+						sharedAmounts,
+					},
+				});
+			}
+
 			form.reset();
 			router.back();
 		},
@@ -247,6 +328,7 @@ const CreateTransactionForm = () => {
 	);
 
 	const payer = useStore(form.store, (state) => state.values.payer);
+	const splitType = useStore(form.store, (state) => state.values.splitType);
 
 	return (
 		<Container>
@@ -676,6 +758,143 @@ const CreateTransactionForm = () => {
 											)}
 										</>
 									)}
+
+									{/* MARK: SHARED
+									 */}
+									{splitType === "SHARED" && (
+										<>
+											<View className="flex-row items-center justify-between">
+												<Label>Shared amounts</Label>
+												<Button
+													onPress={() => {
+														form.pushFieldValue("items", {
+															name: "",
+															amount: 0,
+															participantIds: [],
+														});
+													}}
+													disabled={selectedMembers.length === 0}
+													className="flex-row items-center gap-2 border-2 border-sidebar-foreground bg-sidebar"
+												>
+													<Plus className="text-sidebar-foreground" />
+													<Text className="font-geist-semibold text-sidebar-foreground">
+														Add Item
+													</Text>
+												</Button>
+											</View>
+
+											{selectedMembers.length === 0 ? (
+												<Text className="text-muted-foreground italic">
+													Please select at least one member
+												</Text>
+											) : (
+												<>
+													{/* MARK: Item List Header
+													 */}
+													<View className="flex-row items-center justify-between gap-2">
+														<View className="flex-1">
+															<Label>Name</Label>
+														</View>
+														<View className="w-32">
+															<Label>Amount</Label>
+														</View>
+														<Button
+															disabled
+															className="group invisible aspect-square rounded-full active:bg-destructive/20"
+														>
+															<Plus />
+														</Button>
+														<Button
+															disabled
+															className="group invisible aspect-square rounded-full active:bg-destructive/20"
+														>
+															<Plus />
+														</Button>
+													</View>
+													{/* MARK: Item List
+													 */}
+													<form.Field name="items" mode="array">
+														{(field) =>
+															field.state.value?.map((item, i) => {
+																return (
+																	<View
+																		key={`shared-item-${
+																			// biome-ignore lint/suspicious/noArrayIndexKey: Can not generate id for each field
+																			i
+																		}`}
+																		className="gap-1"
+																	>
+																		<View className="flex-row items-center justify-between gap-2">
+																			<form.Field name={`items[${i}].name`}>
+																				{(field) => {
+																					return (
+																						<Input
+																							placeholder="Name"
+																							className="flex-1"
+																							value={field.state.value}
+																							onChangeText={(value) => {
+																								field.handleChange(value);
+																							}}
+																							clearButtonMode="while-editing"
+																						/>
+																					);
+																				}}
+																			</form.Field>
+																			<form.Field name={`items[${i}].amount`}>
+																				{(field) => {
+																					return (
+																						<Input
+																							placeholder="Amount"
+																							className="w-32"
+																							keyboardType="numeric"
+																							value={field.state.value?.toString()}
+																							onChangeText={(value) => {
+																								field.handleChange(
+																									Number(value),
+																								);
+																							}}
+																							clearButtonMode="while-editing"
+																						/>
+																					);
+																				}}
+																			</form.Field>
+																			<Button
+																				className="group aspect-square rounded-full"
+																				onPress={() => setSelectedShareField(i)}
+																			>
+																				<Plus className="h-4 w-4 text-primary-foreground" />
+																			</Button>
+																			<Button
+																				variant={"ghost"}
+																				className="group aspect-square rounded-full active:bg-destructive/20"
+																				onPress={() =>
+																					form.removeFieldValue("items", i)
+																				}
+																			>
+																				<Trash className="h-4 w-4 text-foreground group-active:text-destructive" />
+																			</Button>
+																		</View>
+																		<form.Field
+																			name={`items[${i}].participantIds`}
+																		>
+																			{(field) => {
+																				return (
+																					<Text className="text-muted-foreground text-sm italic">
+																						{field.state.value?.length}{" "}
+																						participants
+																					</Text>
+																				);
+																			}}
+																		</form.Field>
+																	</View>
+																);
+															})
+														}
+													</form.Field>
+												</>
+											)}
+										</>
+									)}
 								</>
 							);
 						}}
@@ -709,6 +928,8 @@ const CreateTransactionForm = () => {
 					}
 				}}
 			/>
+
+			{splitType === "SHARED" && <AddMemberToShareFormSheet form={form} />}
 		</Container>
 	);
 };
