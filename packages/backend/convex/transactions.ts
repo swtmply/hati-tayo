@@ -19,10 +19,7 @@ export const transactionsOfCurrentUser = query({
 			.query("transactions")
 			.order("desc")) {
 			if (transaction.participants.includes(user._id)) {
-				let payer = null;
-				if (transaction.splitType === "EQUAL") {
-					payer = await ctx.db.get(transaction.payerId);
-				}
+				const payer = await ctx.db.get(transaction.payerId);
 
 				const members = [];
 				const share = await ctx.db
@@ -102,11 +99,7 @@ export const getTransactionDetailsById = query({
 			return null;
 		}
 
-		let payer = null;
-		if (transaction.splitType === "EQUAL") {
-			payer = await ctx.db.get(transaction.payerId);
-		}
-
+		const payer = await ctx.db.get(transaction.payerId);
 		const group = await ctx.db.get(transaction.groupId);
 		const participants = [];
 
@@ -183,6 +176,7 @@ const percentageSplitValidator = v.object({
 			percentage: v.number(),
 		}),
 	),
+	payerId: v.string(),
 });
 
 const fixedSplitValidator = v.object({
@@ -205,6 +199,7 @@ const fixedSplitValidator = v.object({
 			amount: v.number(),
 		}),
 	),
+	payerId: v.string(),
 });
 
 const sharedSplitValidator = v.object({
@@ -234,6 +229,7 @@ const sharedSplitValidator = v.object({
 			amount: v.number(),
 		}),
 	),
+	payerId: v.string(),
 });
 
 export const createTransaction = mutation({
@@ -274,7 +270,7 @@ export const createTransaction = mutation({
 					updatedAt: Date.now(),
 				});
 
-				if (args.data.splitType === "EQUAL") {
+				if (args.data.payerId === participant._id) {
 					payerId = id;
 				}
 
@@ -310,7 +306,7 @@ export const createTransaction = mutation({
 
 				participantsIds.push(id);
 			} else {
-				if (args.data.splitType === "EQUAL") {
+				if (args.data.payerId === participant._id) {
 					payerId = participant._id as Id<"users">;
 				}
 
@@ -405,6 +401,7 @@ export const createTransaction = mutation({
 				splitType: args.data.splitType,
 				date: Date.now(),
 				percentages,
+				payerId,
 			});
 
 			for (const participantId of participantsIds) {
@@ -417,7 +414,7 @@ export const createTransaction = mutation({
 				await ctx.db.insert("transactionShares", {
 					transactionId,
 					userId: participantId,
-					status: "PENDING",
+					status: share.userId === payerId ? "PAID" : "PENDING",
 					amount: (share.percentage / 100) * args.data.amount,
 					createdAt: Date.now(),
 					updatedAt: Date.now(),
@@ -434,6 +431,7 @@ export const createTransaction = mutation({
 				splitType: args.data.splitType,
 				date: Date.now(),
 				fixedAmounts,
+				payerId,
 			});
 
 			for (const participantId of participantsIds) {
@@ -446,7 +444,7 @@ export const createTransaction = mutation({
 				await ctx.db.insert("transactionShares", {
 					transactionId,
 					userId: participantId,
-					status: "PENDING",
+					status: share.userId === payerId ? "PAID" : "PENDING",
 					amount: share.amount,
 					createdAt: Date.now(),
 					updatedAt: Date.now(),
@@ -467,6 +465,7 @@ export const createTransaction = mutation({
 					participantIds: item.participantIds.map((id) => id as Id<"users">),
 				})),
 				sharedAmounts,
+				payerId,
 			});
 
 			for (const participantId of participantsIds) {
@@ -479,7 +478,7 @@ export const createTransaction = mutation({
 				await ctx.db.insert("transactionShares", {
 					transactionId,
 					userId: participantId,
-					status: "PENDING",
+					status: share.userId === payerId ? "PAID" : "PENDING",
 					amount: share.amount,
 					createdAt: Date.now(),
 					updatedAt: Date.now(),

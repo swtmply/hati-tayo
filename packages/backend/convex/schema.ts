@@ -25,6 +25,7 @@ export const percentageSplitValidator = v.object({
 		}),
 	),
 	date: v.number(),
+	payerId: v.id("users"),
 });
 
 export const fixedSplitValidator = v.object({
@@ -40,6 +41,7 @@ export const fixedSplitValidator = v.object({
 		}),
 	),
 	date: v.number(),
+	payerId: v.id("users"),
 });
 
 export const sharedSplitValidator = v.object({
@@ -62,6 +64,7 @@ export const sharedSplitValidator = v.object({
 		}),
 	),
 	date: v.number(),
+	payerId: v.id("users"),
 });
 
 export const transactionSchema = v.union(

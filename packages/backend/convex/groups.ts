@@ -125,10 +125,7 @@ export const getGroupDetailsById = query({
 			.query("transactions")
 			.withIndex("by_groupId", (q) => q.eq("groupId", group._id))
 			.order("desc")) {
-			let payer = null;
-			if (transaction.splitType === "EQUAL") {
-				payer = await ctx.db.get(transaction.payerId);
-			}
+			const payer = await ctx.db.get(transaction.payerId);
 
 			if (payer !== null && payer._id === user._id) {
 				userPaidTransactions.push(transaction);

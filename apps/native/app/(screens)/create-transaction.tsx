@@ -61,11 +61,11 @@ const baseSplitSchema = z.object({
 			phoneNumber: z.string().optional(),
 		}),
 	),
+	payer: z.string().min(1, "A payer must be selected."),
 });
 
 const equalSplitSchema = baseSplitSchema.extend({
 	splitType: z.literal("EQUAL"),
-	payer: z.string().min(1, "A payer must be selected."),
 });
 
 const percentageSplitSchema = baseSplitSchema.extend({
@@ -244,6 +244,7 @@ const CreateTransactionForm = () => {
 							phoneNumber: member.phoneNumber,
 						})),
 						percentages: value.percentages,
+						payerId: value.payer,
 					},
 				});
 			}
@@ -266,6 +267,7 @@ const CreateTransactionForm = () => {
 							phoneNumber: member.phoneNumber,
 						})),
 						fixedAmounts: value.fixedAmounts,
+						payerId: value.payer,
 					},
 				});
 			}
@@ -305,6 +307,7 @@ const CreateTransactionForm = () => {
 						})),
 						items: value.items,
 						sharedAmounts,
+						payerId: value.payer,
 					},
 				});
 			}
@@ -586,47 +589,43 @@ const CreateTransactionForm = () => {
 									{/* MARK: EQUAL
 									 */}
 
-									{splitType === "EQUAL" && (
-										<>
-											<Label>Payer</Label>
-											<View className="flex-row items-center gap-2">
-												{selectedMembers.map((member) => {
-													const selected = payer === member._id;
+									<Label>Payer</Label>
+									<View className="flex-row items-center gap-2">
+										{selectedMembers.map((member) => {
+											const selected = payer === member._id;
 
-													return (
-														<TouchableOpacity
-															key={`selectedMember-${member._id}`}
-															onPress={() => {
-																form.setFieldValue("payer", member._id);
+											return (
+												<TouchableOpacity
+													key={`selectedMember-${member._id}`}
+													onPress={() => {
+														form.setFieldValue("payer", member._id);
+													}}
+												>
+													<Avatar
+														alt={member.name}
+														className={cn(
+															selected && "border-4 border-primary",
+														)}
+													>
+														<AvatarImage
+															source={{
+																uri: member.image,
 															}}
-														>
-															<Avatar
-																alt={member.name}
-																className={cn(
-																	selected && "border-4 border-primary",
-																)}
-															>
-																<AvatarImage
-																	source={{
-																		uri: member.image,
-																	}}
-																/>
-																<AvatarImage
-																	source={{
-																		uri: member.image,
-																	}}
-																/>
-															</Avatar>
-														</TouchableOpacity>
-													);
-												})}
-											</View>
-											{selectedMembers.length === 0 && (
-												<Text className="text-muted-foreground italic">
-													Please select at least one member
-												</Text>
-											)}
-										</>
+														/>
+														<AvatarImage
+															source={{
+																uri: member.image,
+															}}
+														/>
+													</Avatar>
+												</TouchableOpacity>
+											);
+										})}
+									</View>
+									{selectedMembers.length === 0 && (
+										<Text className="text-muted-foreground italic">
+											Please select at least one member
+										</Text>
 									)}
 
 									{/* MARK: PERCENTAGE
