@@ -29,7 +29,7 @@ const SignInPage = () => {
 			password: "",
 		},
 		validators: {
-			onChange: z.object({
+			onSubmit: z.object({
 				email: z.string().email({ message: "Invalid email" }),
 				password: z.string().min(1, { message: "Password is required" }),
 			}),
@@ -44,7 +44,17 @@ const SignInPage = () => {
 					flow: "signIn",
 				});
 			} catch (error) {
-				console.error(error);
+				if (error instanceof Error && error.message.includes("InvalidSecret")) {
+					form.setErrorMap({
+						onChange: {
+							fields: {
+								password: {
+									message: "Invalid password",
+								},
+							},
+						},
+					});
+				}
 
 				if (error instanceof ConvexError && error.data === "INVALID_PASSWORD") {
 					form.setErrorMap({

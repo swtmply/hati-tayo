@@ -104,8 +104,10 @@ const sharedSplitSchema = baseSplitSchema.extend({
 	splitType: z.literal("SHARED"),
 	items: z.array(
 		z.object({
-			participantIds: z.array(z.string()),
-			name: z.string(),
+			participantIds: z
+				.array(z.string())
+				.min(1, "At least one participant is required."),
+			name: z.string().min(1, "Item name is required."),
 			amount: z.number().min(1, "Amount must be at least 1."),
 		}),
 	),
@@ -123,6 +125,17 @@ const splitSchema = z
 		if (
 			data.splitType === "FIXED" &&
 			data.fixedAmounts.reduce((acc, curr) => acc + curr.amount, 0) !==
+				Number.parseFloat(data.amount)
+		) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Amounts must sum to the total amount.",
+			});
+		}
+
+		if (
+			data.splitType === "SHARED" &&
+			data.items.reduce((acc, curr) => acc + curr.amount, 0) !==
 				Number.parseFloat(data.amount)
 		) {
 			ctx.addIssue({
@@ -198,8 +211,39 @@ const CreateTransactionForm = () => {
 		validators: {
 			onSubmit: ({ value }) => {
 				const result = splitSchema.safeParse(value);
-				console.log("result", result);
-				return result.success ? undefined : result.error.format();
+				console.log(JSON.stringify(result, null, 2));
+				if (result.success) return undefined;
+
+				const errors: Record<string, string> = {};
+				for (const issue of result.error.issues) {
+					if (issue.path.length === 0 && value.splitType === "FIXED") {
+						errors.fixedAmounts = issue.message;
+					}
+
+					if (issue.path.length === 0 && value.splitType === "SHARED") {
+						errors.items = issue.message;
+					}
+
+					if (issue.path.length === 1) {
+						errors[issue.path[0] as string] = issue.message;
+					} else {
+						const finalPath = issue.path.reduce((acc, curr, index) => {
+							if (index === 0) {
+								return curr;
+							}
+							if (typeof curr === "number") {
+								return `${acc}[${curr}]`;
+							}
+							return `${acc}.${curr}`;
+						}, "");
+
+						errors[finalPath] = issue.message;
+					}
+				}
+
+				return {
+					fields: errors,
+				};
 			},
 		},
 		// MARK: onSubmit
@@ -441,6 +485,12 @@ const CreateTransactionForm = () => {
 											</form.Subscribe>
 										</SelectContent>
 									</Select>
+									{field.state.meta.errors &&
+									field.state.meta.errors.length > 0 ? (
+										<Text className="text-destructive text-sm">
+											{field.state.meta.errors.map((error) => error).join(", ")}
+										</Text>
+									) : null}
 								</>
 							);
 						}}
@@ -458,6 +508,12 @@ const CreateTransactionForm = () => {
 										value={field.state.value}
 										clearButtonMode="while-editing"
 									/>
+									{field.state.meta.errors &&
+									field.state.meta.errors.length > 0 ? (
+										<Text className="text-destructive text-sm">
+											{field.state.meta.errors.map((error) => error).join(", ")}
+										</Text>
+									) : null}
 								</>
 							);
 						}}
@@ -476,6 +532,12 @@ const CreateTransactionForm = () => {
 										clearButtonMode="while-editing"
 										keyboardType="numeric"
 									/>
+									{field.state.meta.errors &&
+									field.state.meta.errors.length > 0 ? (
+										<Text className="text-destructive text-sm">
+											{field.state.meta.errors.map((error) => error).join(", ")}
+										</Text>
+									) : null}
 								</>
 							);
 						}}
@@ -589,61 +651,28 @@ const CreateTransactionForm = () => {
 									{/* MARK: EQUAL
 									 */}
 
-									<Label>Payer</Label>
-									<View className="flex-row items-center gap-2">
-										{selectedMembers.map((member) => {
-											const selected = payer === member._id;
-
+									<form.Field name="payer">
+										{(field) => {
 											return (
-												<TouchableOpacity
-													key={`selectedMember-${member._id}`}
-													onPress={() => {
-														form.setFieldValue("payer", member._id);
-													}}
-												>
-													<Avatar
-														alt={member.name}
-														className={cn(
-															selected && "border-4 border-primary",
-														)}
-													>
-														<AvatarImage
-															source={{
-																uri: member.image,
-															}}
-														/>
-														<AvatarImage
-															source={{
-																uri: member.image,
-															}}
-														/>
-													</Avatar>
-												</TouchableOpacity>
-											);
-										})}
-									</View>
-									{selectedMembers.length === 0 && (
-										<Text className="text-muted-foreground italic">
-											Please select at least one member
-										</Text>
-									)}
+												<>
+													<Label>Payer</Label>
+													<View className="flex-row items-center gap-2">
+														{selectedMembers.map((member) => {
+															const selected = payer === member._id;
 
-									{/* MARK: PERCENTAGE
-									 */}
-
-									{splitType === "PERCENTAGE" && (
-										<>
-											<Label>Percentage</Label>
-											<form.Field name="percentages" mode="array">
-												{(field) =>
-													selectedMembers.map((member, i) => {
-														return (
-															<View
-																className="flex-row items-center justify-between"
-																key={`selectedMember-${member._id}`}
-															>
-																<View className="flex-1 flex-row items-center gap-3">
-																	<Avatar alt={member.name}>
+															return (
+																<TouchableOpacity
+																	key={`selectedMember-${member._id}`}
+																	onPress={() => {
+																		field.handleChange(member._id);
+																	}}
+																>
+																	<Avatar
+																		alt={member.name}
+																		className={cn(
+																			selected && "border-4 border-primary",
+																		)}
+																	>
 																		<AvatarImage
 																			source={{
 																				uri: member.image,
@@ -655,33 +684,101 @@ const CreateTransactionForm = () => {
 																			}}
 																		/>
 																	</Avatar>
-																	<Text
-																		className="max-w-32 font-geist-semibold"
-																		ellipsizeMode="tail"
-																		numberOfLines={1}
-																	>
-																		{member.name}
-																	</Text>
-																</View>
-																<form.Field
-																	name={`percentages[${i}].percentage`}
-																>
-																	{(field) => {
-																		return (
-																			<Input
-																				placeholder="%"
-																				className="flex-1"
-																				keyboardType="numeric"
-																				value={field.state.value?.toString()}
-																				onChangeText={(value) => {
-																					field.handleChange(Number(value));
+																</TouchableOpacity>
+															);
+														})}
+													</View>
+													{selectedMembers.length === 0 && (
+														<Text className="text-muted-foreground italic">
+															Please select at least one member
+														</Text>
+													)}
+													{field.state.meta.errors &&
+													field.state.meta.errors.length > 0 ? (
+														<Text className="text-destructive text-sm">
+															{field.state.meta.errors
+																.map((error) => error)
+																.join(", ")}
+														</Text>
+													) : null}
+												</>
+											);
+										}}
+									</form.Field>
+
+									{/* MARK: PERCENTAGE
+									 */}
+
+									{splitType === "PERCENTAGE" && (
+										<>
+											<Label>Percentage</Label>
+											<form.Field name="percentages" mode="array">
+												{(field) =>
+													selectedMembers.map((member, i) => {
+														return (
+															<React.Fragment
+																key={`selectedMember-${member._id}`}
+															>
+																<View className="flex-row items-center justify-between">
+																	<View className="flex-1 flex-row items-center gap-3">
+																		<Avatar alt={member.name}>
+																			<AvatarImage
+																				source={{
+																					uri: member.image,
 																				}}
-																				clearButtonMode="while-editing"
 																			/>
-																		);
-																	}}
-																</form.Field>
-															</View>
+																			<AvatarImage
+																				source={{
+																					uri: member.image,
+																				}}
+																			/>
+																		</Avatar>
+																		<Text
+																			className="max-w-32 font-geist-semibold"
+																			ellipsizeMode="tail"
+																			numberOfLines={1}
+																		>
+																			{member.name}
+																		</Text>
+																	</View>
+																	<form.Field
+																		name={`percentages[${i}].percentage`}
+																	>
+																		{(field) => {
+																			return (
+																				<View className="flex-1">
+																					<Input
+																						placeholder="%"
+																						className="flex-1"
+																						keyboardType="numeric"
+																						value={field.state.value?.toString()}
+																						onChangeText={(value) => {
+																							field.handleChange(Number(value));
+																						}}
+																						clearButtonMode="while-editing"
+																					/>
+																					{field.state.meta.errors &&
+																					field.state.meta.errors.length > 0 ? (
+																						<Text className="text-destructive text-sm">
+																							{field.state.meta.errors
+																								.map((error) => error)
+																								.join(", ")}
+																						</Text>
+																					) : null}
+																				</View>
+																			);
+																		}}
+																	</form.Field>
+																</View>
+																{field.state.meta.errors &&
+																field.state.meta.errors.length > 0 ? (
+																	<Text className="text-destructive text-sm">
+																		{field.state.meta.errors
+																			.map((error) => error)
+																			.join(", ")}
+																	</Text>
+																) : null}
+															</React.Fragment>
 														);
 													})
 												}
@@ -704,48 +801,69 @@ const CreateTransactionForm = () => {
 												{(field) =>
 													selectedMembers.map((member, i) => {
 														return (
-															<View
-																className="flex-row items-center justify-between"
+															<React.Fragment
 																key={`selectedMember-${member._id}`}
 															>
-																<View className="flex-1 flex-row items-center gap-3">
-																	<Avatar alt={member.name}>
-																		<AvatarImage
-																			source={{
-																				uri: member.image,
-																			}}
-																		/>
-																		<AvatarImage
-																			source={{
-																				uri: member.image,
-																			}}
-																		/>
-																	</Avatar>
-																	<Text
-																		className="max-w-32 font-geist-semibold"
-																		ellipsizeMode="tail"
-																		numberOfLines={1}
-																	>
-																		{member.name}
-																	</Text>
-																</View>
-																<form.Field name={`fixedAmounts[${i}].amount`}>
-																	{(field) => {
-																		return (
-																			<Input
-																				placeholder="Enter amount"
-																				className="flex-1"
-																				keyboardType="numeric"
-																				value={field.state.value?.toString()}
-																				onChangeText={(value) => {
-																					field.handleChange(Number(value));
+																<View className="flex-row items-center justify-between">
+																	<View className="flex-1 flex-row items-center gap-3">
+																		<Avatar alt={member.name}>
+																			<AvatarImage
+																				source={{
+																					uri: member.image,
 																				}}
-																				clearButtonMode="while-editing"
 																			/>
-																		);
-																	}}
-																</form.Field>
-															</View>
+																			<AvatarImage
+																				source={{
+																					uri: member.image,
+																				}}
+																			/>
+																		</Avatar>
+																		<Text
+																			className="max-w-32 font-geist-semibold"
+																			ellipsizeMode="tail"
+																			numberOfLines={1}
+																		>
+																			{member.name}
+																		</Text>
+																	</View>
+																	<form.Field
+																		name={`fixedAmounts[${i}].amount`}
+																	>
+																		{(field) => {
+																			return (
+																				<View className="flex-1">
+																					<Input
+																						placeholder="Enter amount"
+																						className="flex-1"
+																						keyboardType="numeric"
+																						value={field.state.value?.toString()}
+																						onChangeText={(value) => {
+																							field.handleChange(Number(value));
+																						}}
+																						clearButtonMode="while-editing"
+																					/>
+																					{field.state.meta.errors &&
+																					field.state.meta.errors.length > 0 ? (
+																						<Text className="text-destructive text-sm">
+																							{field.state.meta.errors
+																								.map((error) => error)
+																								.join(", ")}
+																						</Text>
+																					) : null}
+																				</View>
+																			);
+																		}}
+																	</form.Field>
+																</View>
+																{field.state.meta.errors &&
+																field.state.meta.errors.length > 0 ? (
+																	<Text className="text-destructive text-sm">
+																		{field.state.meta.errors
+																			.map((error) => error)
+																			.join(", ")}
+																	</Text>
+																) : null}
+															</React.Fragment>
 														);
 													})
 												}
@@ -790,7 +908,7 @@ const CreateTransactionForm = () => {
 												<>
 													{/* MARK: Item List Header
 													 */}
-													<View className="flex-row items-center justify-between gap-2">
+													<View className="-mb-4 flex-row items-center justify-between gap-2">
 														<View className="flex-1">
 															<Label>Name</Label>
 														</View>
@@ -816,76 +934,112 @@ const CreateTransactionForm = () => {
 														{(field) =>
 															field.state.value?.map((item, i) => {
 																return (
-																	<View
+																	<React.Fragment
 																		key={`shared-item-${
 																			// biome-ignore lint/suspicious/noArrayIndexKey: Can not generate id for each field
 																			i
 																		}`}
-																		className="gap-1"
 																	>
-																		<View className="flex-row items-center justify-between gap-2">
-																			<form.Field name={`items[${i}].name`}>
+																		<View className="gap-1">
+																			<View className="flex-row items-center justify-between gap-2">
+																				<form.Field name={`items[${i}].name`}>
+																					{(field) => {
+																						return (
+																							<Input
+																								placeholder="Name"
+																								className={cn(
+																									"flex-1",
+																									field.state.meta.errors &&
+																										field.state.meta.errors
+																											.length > 0
+																										? "border-destructive"
+																										: "",
+																								)}
+																								value={field.state.value}
+																								onChangeText={(value) => {
+																									field.handleChange(value);
+																								}}
+																								clearButtonMode="while-editing"
+																							/>
+																						);
+																					}}
+																				</form.Field>
+																				<form.Field name={`items[${i}].amount`}>
+																					{(field) => {
+																						return (
+																							<Input
+																								placeholder="Amount"
+																								className={cn(
+																									"w-32",
+																									field.state.meta.errors &&
+																										field.state.meta.errors
+																											.length > 0
+																										? "border-destructive"
+																										: "",
+																								)}
+																								keyboardType="numeric"
+																								value={field.state.value?.toString()}
+																								onChangeText={(value) => {
+																									field.handleChange(
+																										Number(value),
+																									);
+																								}}
+																								clearButtonMode="while-editing"
+																							/>
+																						);
+																					}}
+																				</form.Field>
+																				<Button
+																					className="group aspect-square rounded-full"
+																					onPress={() =>
+																						setSelectedShareField(i)
+																					}
+																				>
+																					<Plus className="h-4 w-4 text-primary-foreground" />
+																				</Button>
+																				<Button
+																					variant={"ghost"}
+																					className="group aspect-square rounded-full active:bg-destructive/20"
+																					onPress={() =>
+																						form.removeFieldValue("items", i)
+																					}
+																				>
+																					<Trash className="h-4 w-4 text-foreground group-active:text-destructive" />
+																				</Button>
+																			</View>
+																			<form.Field
+																				name={`items[${i}].participantIds`}
+																			>
 																				{(field) => {
 																					return (
-																						<Input
-																							placeholder="Name"
-																							className="flex-1"
-																							value={field.state.value}
-																							onChangeText={(value) => {
-																								field.handleChange(value);
-																							}}
-																							clearButtonMode="while-editing"
-																						/>
+																						<View className="flex-row items-center gap-2">
+																							<Text className="text-muted-foreground text-sm italic">
+																								{field.state.value?.length}{" "}
+																								participants
+																							</Text>
+																							{field.state.meta.errors &&
+																							field.state.meta.errors.length >
+																								0 ? (
+																								<Text className="text-destructive text-sm italic">
+																									{field.state.meta.errors
+																										.map((error) => error)
+																										.join(", ")}
+																								</Text>
+																							) : null}
+																						</View>
 																					);
 																				}}
 																			</form.Field>
-																			<form.Field name={`items[${i}].amount`}>
-																				{(field) => {
-																					return (
-																						<Input
-																							placeholder="Amount"
-																							className="w-32"
-																							keyboardType="numeric"
-																							value={field.state.value?.toString()}
-																							onChangeText={(value) => {
-																								field.handleChange(
-																									Number(value),
-																								);
-																							}}
-																							clearButtonMode="while-editing"
-																						/>
-																					);
-																				}}
-																			</form.Field>
-																			<Button
-																				className="group aspect-square rounded-full"
-																				onPress={() => setSelectedShareField(i)}
-																			>
-																				<Plus className="h-4 w-4 text-primary-foreground" />
-																			</Button>
-																			<Button
-																				variant={"ghost"}
-																				className="group aspect-square rounded-full active:bg-destructive/20"
-																				onPress={() =>
-																					form.removeFieldValue("items", i)
-																				}
-																			>
-																				<Trash className="h-4 w-4 text-foreground group-active:text-destructive" />
-																			</Button>
 																		</View>
-																		<form.Field
-																			name={`items[${i}].participantIds`}
-																		>
-																			{(field) => {
-																				return (
-																					<Text className="text-muted-foreground text-sm italic">
-																						{field.state.value?.length}{" "}
-																						participants
-																					</Text>
-																				);
-																			}}
-																		</form.Field>
-																	</View>
+																		{field.state.meta.errors &&
+																		field.state.meta.errors.length > 0 ? (
+																			<Text className="text-destructive text-sm">
+																				{field.state.meta.errors
+																					.map((error) => error)
+																					.join(", ")}
+																			</Text>
+																		) : null}
+																	</React.Fragment>
 																);
 															})
 														}
@@ -901,8 +1055,13 @@ const CreateTransactionForm = () => {
 
 					{/* MARK: Submit Button
 					 */}
-					<Button onPress={() => form.handleSubmit()}>
-						<Text>Submit</Text>
+
+					<Button
+						onPress={() => {
+							form.handleSubmit();
+						}}
+					>
+						<Text>Submit </Text>
 					</Button>
 				</View>
 			</ScrollView>

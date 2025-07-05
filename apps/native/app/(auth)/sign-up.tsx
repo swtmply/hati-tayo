@@ -20,12 +20,14 @@ const SignUpPage = () => {
 		defaultValues: {
 			name: "",
 			email: "",
+			phoneNumber: "",
 			password: "",
 		},
 		validators: {
-			onChange: z.object({
+			onSubmit: z.object({
 				name: z.string().min(1, { message: "Name is required" }),
 				email: z.string().email({ message: "Invalid email" }),
+				phoneNumber: z.string().min(1, { message: "Phone number is required" }),
 				password: z.string().min(1, { message: "Password is required" }),
 			}),
 		},
@@ -36,6 +38,7 @@ const SignUpPage = () => {
 					name: value.name,
 					email: value.email,
 					password: value.password,
+					phoneNumber: value.phoneNumber,
 					image: `https://ui-avatars.com/api/?background=random&name=${value.name.replace(" ", "+")}`,
 					redirectTo: "/(tabs)",
 					flow: "signUp",
@@ -105,6 +108,28 @@ const SignUpPage = () => {
 								<Text className="font-geist-medium">Account email</Text>
 								<Input
 									placeholder="Enter Email"
+									onChangeText={field.handleChange}
+									value={field.state.value}
+									clearButtonMode="while-editing"
+									className="native:h-14 rounded-full px-4"
+								/>
+								{field.state.meta.errors &&
+								field.state.meta.errors.length > 0 ? (
+									<Text className="text-destructive text-sm">
+										{field.state.meta.errors
+											.map((error) => error?.message)
+											.join(", ")}
+									</Text>
+								) : null}
+							</View>
+						)}
+					</form.Field>
+					<form.Field name="phoneNumber">
+						{(field) => (
+							<View className="gap-2">
+								<Text className="font-geist-medium">Account phone number</Text>
+								<Input
+									placeholder="Enter Phone Number"
 									onChangeText={field.handleChange}
 									value={field.state.value}
 									clearButtonMode="while-editing"
