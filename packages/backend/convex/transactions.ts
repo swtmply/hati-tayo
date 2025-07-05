@@ -261,14 +261,35 @@ export const createTransaction = mutation({
 				participant._id.startsWith("anonymous-user-") ||
 				participant._id.startsWith("contact-")
 			) {
-				const id = await ctx.db.insert("users", {
-					name: participant.name,
-					email: participant.email,
-					image: `https://ui-avatars.com/api/?background=random&name=${participant.name.replace(" ", "+")}`,
-					phoneNumber: participant.phoneNumber,
-					createdAt: Date.now(),
-					updatedAt: Date.now(),
-				});
+				let id = "" as Id<"users">;
+
+				// search if user exists
+				const existingUser = await ctx.db
+					.query("users")
+					.withIndex("by_phoneNumber", (q) =>
+						q.eq(
+							"phoneNumber",
+							participant.phoneNumber?.startsWith("+")
+								? participant.phoneNumber.replace("+63", "0")
+								: participant.phoneNumber,
+						),
+					)
+					.unique();
+
+				if (existingUser !== null) {
+					id = existingUser._id;
+				} else {
+					id = await ctx.db.insert("users", {
+						name: participant.name,
+						email: participant.email,
+						image: `https://ui-avatars.com/api/?background=random&name=${participant.name.replace(" ", "+")}`,
+						phoneNumber: participant.phoneNumber?.startsWith("+")
+							? participant.phoneNumber.replace("+63", "0")
+							: participant.phoneNumber,
+						createdAt: Date.now(),
+						updatedAt: Date.now(),
+					});
+				}
 
 				if (args.data.payerId === participant._id) {
 					payerId = id;
@@ -384,7 +405,7 @@ export const createTransaction = mutation({
 				await ctx.db.insert("transactionShares", {
 					transactionId,
 					userId: participantId,
-					status: "PENDING",
+					status: participantId === payerId ? "PAID" : "PENDING",
 					amount: args.data.amount / participantsIds.length,
 					createdAt: Date.now(),
 					updatedAt: Date.now(),

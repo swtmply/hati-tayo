@@ -85,6 +85,7 @@ export default defineSchema({
 		updatedAt: v.number(),
 	})
 		.index("by_email", ["email"])
+		.index("by_phoneNumber", ["phoneNumber"])
 		.searchIndex("search_email", {
 			searchField: "email",
 			filterFields: ["email"],
