@@ -81,16 +81,25 @@ const ProfilePage = () => {
 						Name
 					</Text>
 					<View className="flex-row items-center gap-2">
-						<Text className="text-lg text-muted-foreground">{user?.name}</Text>
+						<Text className=" text-muted-foreground">{user?.name}</Text>
+						<ChevronRight className="text-muted-foreground" />
+					</View>
+				</View>
+				<View className="flex-row items-center justify-between border-border border-b px-4 py-2">
+					<Text className="font-geist-medium text-card-foreground text-lg">
+						Email
+					</Text>
+					<View className="flex-row items-center gap-2">
+						<Text className=" text-muted-foreground">{user?.email}</Text>
 						<ChevronRight className="text-muted-foreground" />
 					</View>
 				</View>
 				<View className="flex-row items-center justify-between border-border px-4 py-2">
 					<Text className="font-geist-medium text-card-foreground text-lg">
-						Email
+						Phone Number
 					</Text>
 					<View className="flex-row items-center gap-2">
-						<Text className="text-lg text-muted-foreground">{user?.email}</Text>
+						<Text className=" text-muted-foreground">{user?.phoneNumber}</Text>
 						<ChevronRight className="text-muted-foreground" />
 					</View>
 				</View>
@@ -106,7 +115,7 @@ const ProfilePage = () => {
 						Password
 					</Text>
 					<View className="flex-row items-center gap-2">
-						<Text className="text-lg text-muted-foreground">********</Text>
+						<Text className="text-muted-foreground">********</Text>
 						<ChevronRight className="text-muted-foreground" />
 					</View>
 				</View>
