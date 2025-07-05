@@ -203,7 +203,7 @@ const SignInPage = () => {
 							<Text>Sign in</Text>
 						</Button>
 
-						<Link href={"/(auth)/sign-up"}>
+						<Link href={"/(auth)/sign-up"} push>
 							<Text>
 								Don't have an account yet?{" "}
 								<Text className="text-primary">Sign up here</Text>

@@ -155,7 +155,7 @@ const SignUpPage = () => {
 
 					<Text>
 						Already have an account yet?{" "}
-						<Link href={"/(auth)/sign-in"}>
+						<Link href={"/(auth)/sign-in"} push>
 							<Text className="text-primary">Sign in here</Text>
 						</Link>
 					</Text>
