@@ -69,15 +69,22 @@ const TransactionCard = ({
 							? "You owe"
 							: "You are owed"}
 					</Text>
-					<CurrencyFormat
-						amount={transaction.share?.amount ?? 0}
-						className={cn(
-							"-mb-1 font-geist-bold text-2xl tracking-tighter",
-							transaction.share?.status === "PENDING"
-								? "text-destructive"
-								: "text-primary",
-						)}
-					/>
+
+					{transaction.isSettled ? (
+						<Text className="-mb-1 font-geist-bold text-2xl text-primary tracking-tighter">
+							Settled
+						</Text>
+					) : (
+						<CurrencyFormat
+							amount={transaction.share?.amount ?? 0}
+							className={cn(
+								"-mb-1 font-geist-bold text-2xl tracking-tighter",
+								transaction.share?.status === "PENDING"
+									? "text-destructive"
+									: "text-primary",
+							)}
+						/>
+					)}
 				</View>
 			</View>
 		</TouchableOpacity>
