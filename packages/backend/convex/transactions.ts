@@ -31,14 +31,25 @@ export const transactionsOfCurrentUser = query({
 					.unique();
 
 				if (share !== null) {
-					// get the total amount of pending shares
-					const pendingShares = await ctx.db
-						.query("transactionShares")
-						.withIndex("by_transactionId", (q) =>
-							q.eq("transactionId", transaction._id),
-						)
-						.filter((q) => q.eq(q.field("status"), "PENDING"))
-						.collect();
+					let pendingShares = [];
+
+					if (transaction.payerId === user._id) {
+						pendingShares = await ctx.db
+							.query("transactionShares")
+							.withIndex("by_transactionId", (q) =>
+								q.eq("transactionId", transaction._id),
+							)
+							.filter((q) => q.eq(q.field("status"), "PENDING"))
+							.collect();
+					} else {
+						pendingShares = await ctx.db
+							.query("transactionShares")
+							.withIndex("by_transactionId", (q) =>
+								q.eq("transactionId", transaction._id),
+							)
+							.filter((q) => q.eq(q.field("userId"), user._id))
+							.collect();
+					}
 
 					share.amount = pendingShares.reduce(
 						(acc, share) => acc + share.amount,
@@ -262,21 +273,28 @@ export const createTransaction = mutation({
 				participant._id.startsWith("contact-")
 			) {
 				let id = "" as Id<"users">;
+				let existingUser = null;
 
-				// search if user exists
-				const existingUser = await ctx.db
-					.query("users")
-					.withIndex("by_phoneNumber", (q) =>
-						q.eq(
-							"phoneNumber",
-							participant.phoneNumber?.startsWith("+")
-								? participant.phoneNumber.replace("+63", "0")
-								: participant.phoneNumber,
-						),
-					)
-					.unique();
+				if (participant.phoneNumber !== "") {
+					existingUser = await ctx.db
+						.query("users")
+						.withIndex("by_phoneNumber", (q) =>
+							q.eq(
+								"phoneNumber",
+								participant.phoneNumber?.startsWith("+")
+									? participant.phoneNumber.replace("+63", "0")
+									: participant.phoneNumber,
+							),
+						)
+						.unique();
+				}
 
 				if (existingUser !== null) {
+					// Check if user is already in the participantsIds array
+					if (participantsIds.includes(existingUser._id)) {
+						continue;
+					}
+
 					id = existingUser._id;
 				} else {
 					id = await ctx.db.insert("users", {

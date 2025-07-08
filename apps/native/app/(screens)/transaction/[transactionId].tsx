@@ -386,15 +386,13 @@ const SharedTransactionDetails = ({
 				{transaction.items.map((item) => (
 					<View
 						key={item.name}
-						className={cn("flex-row items-center pb-4", {
-							"border-border border-b": item !== transaction.items.at(-1),
-						})}
+						className="flex-row items-center rounded-lg border border-input bg-sidebar p-4 pb-4 dark:bg-secondary"
 					>
 						<View className="flex-1 flex-row items-center justify-between">
 							<View>
 								<Text className="font-geist-semibold">{item.name}</Text>
 								<View className="flex-row gap-2">
-									{item.participantIds.map((participantId) => {
+									{item.participantIds.map((participantId, index) => {
 										const participant = transaction.participants.find(
 											(participant) => participant._id === participantId,
 										);
@@ -406,7 +404,13 @@ const SharedTransactionDetails = ({
 												key={participantId}
 												className="flex-row items-center gap-2"
 											>
-												<Avatar alt={participant.name}>
+												<Avatar
+													alt={participant.name}
+													className={cn(
+														"-ml-6 rounded-full",
+														index === 0 ? "ml-0" : "",
+													)}
+												>
 													<AvatarImage
 														source={{
 															uri: participant.image,

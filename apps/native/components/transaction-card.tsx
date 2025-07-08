@@ -24,7 +24,7 @@ const TransactionCard = ({
 				router.push(`/transaction/${transaction._id}`);
 			}}
 			className={cn(
-				"flex-row justify-between rounded-xl border border-sidebar-border bg-sidebar p-4",
+				"flex-row justify-between rounded-xl border border-sidebar-border bg-sidebar p-4 dark:bg-secondary",
 			)}
 		>
 			<View className={cn(inGroupView ? "gap-4" : "gap-1.5")}>
@@ -37,7 +37,7 @@ const TransactionCard = ({
 					<Text
 						numberOfLines={1}
 						ellipsizeMode="tail"
-						className="-mt-1 font-geist-bold text-xl tracking-tighter"
+						className="-mt-1 font-geist-bold text-xl tracking-tighter dark:text-secondary-foreground"
 					>
 						{transaction.name}
 					</Text>
@@ -71,7 +71,7 @@ const TransactionCard = ({
 					</Text>
 
 					{transaction.isSettled ? (
-						<Text className="-mb-1 font-geist-bold text-2xl text-primary tracking-tighter">
+						<Text className="-mb-1 font-geist-bold text-2xl text-primary tracking-tighter dark:text-secondary-foreground">
 							Settled
 						</Text>
 					) : (

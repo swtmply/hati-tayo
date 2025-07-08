@@ -75,8 +75,8 @@ const ProfilePage = () => {
 				Personal Information
 			</Text>
 
-			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar">
-				<View className="flex-row items-center justify-between border-border border-b px-4 py-2">
+			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar dark:bg-secondary">
+				<View className="flex-row items-center justify-between border-border border-b px-4 py-2 dark:border-popover">
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Name
 					</Text>
@@ -85,7 +85,7 @@ const ProfilePage = () => {
 						<ChevronRight className="text-muted-foreground" />
 					</View>
 				</View>
-				<View className="flex-row items-center justify-between border-border border-b px-4 py-2">
+				<View className="flex-row items-center justify-between border-border border-b px-4 py-2 dark:border-popover">
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Email
 					</Text>
@@ -109,7 +109,7 @@ const ProfilePage = () => {
 				Account Settings
 			</Text>
 
-			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar">
+			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar dark:bg-secondary">
 				<View className="flex-row items-center justify-between border-border px-4 py-2">
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Password
@@ -125,7 +125,7 @@ const ProfilePage = () => {
 				Danger Zone
 			</Text>
 
-			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar">
+			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar dark:bg-secondary">
 				<Dialog
 					open={isDeleteDialogVisible}
 					onOpenChange={setDeleteDialogVisible}
@@ -133,7 +133,7 @@ const ProfilePage = () => {
 					<DialogTrigger asChild>
 						<Pressable
 							onPress={handleDeleteAccountPress}
-							className="flex-row items-center justify-between border-border border-b px-4 py-2"
+							className="flex-row items-center justify-between border-border border-b px-4 py-2 dark:border-popover"
 						>
 							<Text className="font-geist-bold text-destructive text-lg">
 								Delete Account

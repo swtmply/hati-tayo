@@ -90,6 +90,7 @@ type GroupParticipant = {
 		status: string;
 	}[];
 };
+
 export const getGroupDetailsById = query({
 	args: {
 		id: v.id("groups"),
@@ -139,6 +140,33 @@ export const getGroupDetailsById = query({
 				)
 				.filter((q) => q.eq(q.field("userId"), user._id))
 				.unique();
+
+			if (share !== null) {
+				let pendingShares = [];
+
+				if (transaction.payerId === user._id) {
+					pendingShares = await ctx.db
+						.query("transactionShares")
+						.withIndex("by_transactionId", (q) =>
+							q.eq("transactionId", transaction._id),
+						)
+						.filter((q) => q.eq(q.field("status"), "PENDING"))
+						.collect();
+				} else {
+					pendingShares = await ctx.db
+						.query("transactionShares")
+						.withIndex("by_transactionId", (q) =>
+							q.eq("transactionId", transaction._id),
+						)
+						.filter((q) => q.eq(q.field("userId"), user._id))
+						.collect();
+				}
+
+				share.amount = pendingShares.reduce(
+					(acc, share) => acc + share.amount,
+					0,
+				);
+			}
 
 			for await (const memberId of transaction.participants) {
 				const member = await ctx.db.get(memberId);

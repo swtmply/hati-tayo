@@ -101,21 +101,25 @@ const GroupDetails = () => {
 
 			<ScrollView>
 				<View className="flex-row items-center justify-around">
-					<View className="flex-col items-center justify-center">
-						<Text className="font-geist-semibold text-lg">You owe</Text>
-						<CurrencyFormat
-							amount={userOwed ?? 0}
-							className="font-geist-bold text-4xl text-destructive"
-						/>
-					</View>
+					{userOwed !== 0 && (
+						<View className="flex-col items-center justify-center">
+							<Text className="font-geist-semibold text-lg">You owe</Text>
+							<CurrencyFormat
+								amount={userOwed ?? 0}
+								className="font-geist-bold text-4xl text-destructive"
+							/>
+						</View>
+					)}
 
-					<View className="flex-col items-center justify-center">
-						<Text className="font-geist-semibold text-lg">You are owed</Text>
-						<CurrencyFormat
-							amount={debtToUser ?? 0}
-							className="font-geist-bold text-4xl text-primary"
-						/>
-					</View>
+					{debtToUser !== 0 && (
+						<View className="flex-col items-center justify-center">
+							<Text className="font-geist-semibold text-lg">You are owed</Text>
+							<CurrencyFormat
+								amount={debtToUser ?? 0}
+								className="font-geist-bold text-4xl text-primary"
+							/>
+						</View>
+					)}
 				</View>
 				<Text className="my-4 font-geist-bold tracking-tighter">Members</Text>
 
