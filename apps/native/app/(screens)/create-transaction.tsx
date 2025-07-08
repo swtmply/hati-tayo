@@ -377,9 +377,14 @@ const CreateTransactionForm = () => {
 	const payer = useStore(form.store, (state) => state.values.payer);
 	const splitType = useStore(form.store, (state) => state.values.splitType);
 
+	const { keyboardHeight, isKeyboardVisible } = useKeyboard();
+
 	return (
 		<Container>
-			<ScrollView>
+			<ScrollView
+				style={{ marginBottom: isKeyboardVisible ? keyboardHeight : 0 }}
+				showsVerticalScrollIndicator={false}
+			>
 				<View className="gap-4 pb-8">
 					<View className="flex-row items-center justify-between pb-4">
 						<TouchableOpacity

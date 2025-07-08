@@ -63,12 +63,13 @@ const SignUpPage = () => {
 
 	return (
 		<Container>
-			<View className="-top-0 absolute right-0 left-0 h-[200px] bg-primary" />
-			<ScrollView
-				className="flex-1"
-				style={{ marginBottom: isKeyboardVisible ? keyboardHeight : 0 }}
+			<View
+				className={cn(
+					"-top-0 absolute right-0 left-0 h-[150px] items-center justify-center bg-primary",
+					isKeyboardVisible ? "hidden" : "",
+				)}
 			>
-				<View className="h-[150px] flex-row items-center">
+				<View className="flex-row items-center">
 					<Image
 						source={{ uri: assets?.[0].uri }}
 						style={{
@@ -80,8 +81,13 @@ const SignUpPage = () => {
 						Hati Tayo
 					</Text>
 				</View>
+			</View>
 
-				<View className="gap-4 py-8">
+			<ScrollView
+				className={cn("flex-1", isKeyboardVisible ? "" : "mt-[150px]")}
+				style={{ marginBottom: isKeyboardVisible ? keyboardHeight : 0 }}
+			>
+				<View className="gap-4 pb-8">
 					<Text className="mb-2 font-geist-bold text-3xl text-foreground">
 						Sign up
 					</Text>
@@ -139,8 +145,8 @@ const SignUpPage = () => {
 									value={field.state.value}
 									clearButtonMode="while-editing"
 									className="native:h-14 rounded-full px-4"
-										keyboardType="phone-pad"
-										maxLength={11}
+									keyboardType="phone-pad"
+									maxLength={11}
 								/>
 								{field.state.meta.errors &&
 								field.state.meta.errors.length > 0 ? (
