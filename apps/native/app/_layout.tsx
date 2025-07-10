@@ -25,7 +25,9 @@ import { remapProps } from "nativewind";
 import React, { useRef } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Toast from "react-native-toast-message";
 import AppStack from "~/components/app-stack";
+import { toastConfig } from "~/components/ui/toast";
 import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/use-color-scheme";
@@ -117,6 +119,7 @@ export default function RootLayout() {
 				<GestureHandlerRootView style={{ flex: 1 }}>
 					<AppStack />
 				</GestureHandlerRootView>
+				<Toast config={toastConfig} />
 				<PortalHost />
 			</ThemeProvider>
 		</ConvexAuthProvider>

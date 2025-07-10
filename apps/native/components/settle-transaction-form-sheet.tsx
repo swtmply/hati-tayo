@@ -12,6 +12,7 @@ import type { TransactionShareMembers } from "@hati-tayo/backend/convex/types";
 import { useMutation } from "convex/react";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
+import Toast from "react-native-toast-message";
 import { useColorScheme } from "~/lib/use-color-scheme";
 import { cn } from "~/lib/utils";
 import { Avatar, AvatarImage } from "./ui/avatar";
@@ -35,9 +36,7 @@ const SettleTransactionFormSheet = ({
 	const bottomSheetRef = React.useRef<BottomSheet>(null);
 	const [selectedUsers, setSelectedUsers] =
 		React.useState<TransactionShareMembers>([]);
-	const updateTransactionShare = useMutation(
-		api.transaction_shares.updateTransactionShare,
-	);
+
 	const { colorScheme } = useColorScheme();
 
 	const handleSheetChanges = (index: number) => {
@@ -53,6 +52,44 @@ const SettleTransactionFormSheet = ({
 	const FooterComponent = (props: BottomSheetFooterProps) => {
 		const { close } = useBottomSheet();
 
+		const updateTransactionShare = useMutation(
+			api.transaction_shares.updateTransactionShare,
+		);
+
+		const updateTransction = async () => {
+			try {
+				const response = await updateTransactionShare({
+					ids: selectedUsers.map(
+						(user) => user.share?._id as Id<"transactionShares">,
+					),
+				});
+
+				if (response.ok) {
+					onSubmit(selectedUsers);
+
+					Toast.show({
+						type: "success",
+						text1: "Success",
+						text2: "Transaction settled successfully",
+					});
+
+					close();
+				} else {
+					Toast.show({
+						type: "error",
+						text1: "Something went wrong",
+						text2: "Failed to settle transaction",
+					});
+				}
+			} catch (error) {
+				Toast.show({
+					type: "error",
+					text1: "Something went wrong",
+					text2: "Failed to settle transaction",
+				});
+			}
+		};
+
 		return (
 			<BottomSheetFooter
 				{...props}
@@ -63,15 +100,7 @@ const SettleTransactionFormSheet = ({
 			>
 				<Button
 					disabled={selectedUsers.length === 0}
-					onPress={() => {
-						onSubmit(selectedUsers);
-						updateTransactionShare({
-							ids: selectedUsers.map(
-								(user) => user.share?._id as Id<"transactionShares">,
-							),
-						});
-						close();
-					}}
+					onPress={updateTransction}
 				>
 					<Text>Settle Debts</Text>
 				</Button>

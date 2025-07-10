@@ -1,11 +1,13 @@
 import { api } from "@hati-tayo/backend/convex/_generated/api";
 import type { Id } from "@hati-tayo/backend/convex/_generated/dataModel";
+import type { CreateTransactionResponse } from "@hati-tayo/backend/convex/types";
 import * as SelectPrimitive from "@rn-primitives/select";
 import { formOptions, useStore } from "@tanstack/react-form";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
 import React from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
+import Toast from "react-native-toast-message";
 import { z } from "zod";
 import AddMemberFormSheet from "~/components/add-member-form-sheet";
 import AddMemberToShareFormSheet from "~/components/add-member-to-share-form-sheet";
@@ -211,7 +213,6 @@ const CreateTransactionForm = () => {
 		validators: {
 			onSubmit: ({ value }) => {
 				const result = splitSchema.safeParse(value);
-				console.log(JSON.stringify(result, null, 2));
 				if (result.success) return undefined;
 
 				const errors: Record<string, string> = {};
@@ -247,9 +248,14 @@ const CreateTransactionForm = () => {
 			},
 		},
 		// MARK: onSubmit
-		onSubmit: ({ value }) => {
+		onSubmit: async ({ value }) => {
+			let response: CreateTransactionResponse = {
+				ok: false,
+				message: "",
+			};
+
 			if (value.splitType === "EQUAL") {
-				createTransaction({
+				response = await createTransaction({
 					data: {
 						amount: Number.parseFloat(value.amount),
 						name: value.transactionName,
@@ -271,7 +277,7 @@ const CreateTransactionForm = () => {
 			}
 
 			if (value.splitType === "PERCENTAGE") {
-				createTransaction({
+				response = await createTransaction({
 					data: {
 						amount: Number.parseFloat(value.amount),
 						name: value.transactionName,
@@ -294,7 +300,7 @@ const CreateTransactionForm = () => {
 			}
 
 			if (value.splitType === "FIXED") {
-				createTransaction({
+				response = await createTransaction({
 					data: {
 						amount: Number.parseFloat(value.amount),
 						name: value.transactionName,
@@ -333,7 +339,7 @@ const CreateTransactionForm = () => {
 					([userId, amount]) => ({ userId, amount }),
 				);
 
-				createTransaction({
+				response = await createTransaction({
 					data: {
 						amount: Number.parseFloat(value.amount),
 						name: value.transactionName,
@@ -356,8 +362,21 @@ const CreateTransactionForm = () => {
 				});
 			}
 
-			form.reset();
-			router.back();
+			if (response?.ok) {
+				router.back();
+
+				Toast.show({
+					type: "success",
+					text1: "Success",
+					text2: response?.message,
+				});
+			} else {
+				Toast.show({
+					type: "error",
+					text1: "Error",
+					text2: response?.message,
+				});
+			}
 		},
 	});
 
@@ -634,7 +653,7 @@ const CreateTransactionForm = () => {
 							return (
 								<>
 									<Label>Split Type</Label>
-									<View className="flex-row items-center rounded-full bg-sidebar p-1">
+									<View className="flex-row items-center rounded-full bg-sidebar p-1 dark:bg-secondary">
 										{SPLIT_TYPES.map((type) => {
 											return (
 												<TouchableOpacity
@@ -1061,13 +1080,20 @@ const CreateTransactionForm = () => {
 					{/* MARK: Submit Button
 					 */}
 
-					<Button
-						onPress={() => {
-							form.handleSubmit();
+					<form.Subscribe selector={(state) => state.isSubmitting}>
+						{(isSubmitting) => {
+							return (
+								<Button
+									onPress={() => {
+										form.handleSubmit();
+									}}
+									disabled={isSubmitting}
+								>
+									<Text>Submit </Text>
+								</Button>
+							);
 						}}
-					>
-						<Text>Submit </Text>
-					</Button>
+					</form.Subscribe>
 				</View>
 			</ScrollView>
 			{/* MARK: Add Member Form Sheet

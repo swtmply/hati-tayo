@@ -43,3 +43,7 @@ export interface SharedTransactionShare
 	extends Omit<Infer<typeof sharedSplitValidator>, "participants"> {
 	participants: TransactionShareMembers;
 }
+
+export type CreateTransactionResponse = FunctionReturnType<
+	typeof api.transactions.createTransaction
+>;

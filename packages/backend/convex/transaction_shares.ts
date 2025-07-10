@@ -57,10 +57,22 @@ export const updateTransactionShare = mutation({
 		ids: v.array(v.id("transactionShares")),
 	},
 	handler: async (ctx, args) => {
-		for (const id of args.ids) {
-			await ctx.db.patch(id, {
-				status: "PAID",
-			});
+		try {
+			for (const id of args.ids) {
+				await ctx.db.patch(id, {
+					status: "PAID",
+				});
+			}
+
+			return {
+				ok: true,
+				message: "Transaction share updated successfully",
+			};
+		} catch (error) {
+			return {
+				ok: false,
+				message: "Failed to update transaction share",
+			};
 		}
 	},
 });

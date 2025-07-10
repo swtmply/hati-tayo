@@ -16,3 +16,4 @@ and you must produce steps and always explain what you are doing. The goal is to
 -   **DO NOT:** Do not apologize or use conversational fluff like "Of course!" or "Certainly!"
 -   **DO NOT:** Do not suggest solutions that require external libraries unless specifically asked.
 -   **DO NOT:** DO not over complicate the things that you do. Sometimes simple is better.
+-   **DO NOT:** Do not use the useEffect hook

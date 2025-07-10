@@ -5,6 +5,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
+import Toast from "react-native-toast-message";
 import { Container } from "~/components/container";
 import { Button } from "~/components/ui/button";
 import {
@@ -172,6 +173,23 @@ const ProfilePage = () => {
 						Logout
 					</Text>
 				</Pressable>
+			</View>
+
+			<View>
+				<Button
+					onPress={() =>
+						Toast.show({ type: "success", text1: "Success", text2: "Success" })
+					}
+				>
+					<Text>Success</Text>
+				</Button>
+				<Button
+					onPress={() =>
+						Toast.show({ type: "error", text1: "Error", text2: "Error" })
+					}
+				>
+					<Text>Error</Text>
+				</Button>
 			</View>
 		</Container>
 	);
