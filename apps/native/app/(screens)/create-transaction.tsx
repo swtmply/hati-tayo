@@ -14,7 +14,13 @@ import AddMemberToShareFormSheet from "~/components/add-member-to-share-form-she
 import { Container } from "~/components/container";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, CircleCheck, Plus, Trash } from "~/components/ui/icons";
+import {
+	ChevronLeft,
+	CircleCheck,
+	Plus,
+	Sparkles,
+	Trash,
+} from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem } from "~/components/ui/select";
@@ -770,7 +776,7 @@ const CreateTransactionForm = () => {
 																	>
 																		{(field) => {
 																			return (
-																				<View className="flex-1">
+																				<View className="flex-1 flex-row items-center gap-2">
 																					<Input
 																						placeholder="%"
 																						className="flex-1"
@@ -781,6 +787,37 @@ const CreateTransactionForm = () => {
 																						}}
 																						clearButtonMode="while-editing"
 																					/>
+																					<Button
+																						onPress={() => {
+																							const percentages =
+																								form.getFieldValue(
+																									"percentages",
+																								) || [];
+																							const totalPercentage =
+																								percentages.reduce(
+																									(acc, p, index) => {
+																										if (index !== i) {
+																											return (
+																												acc +
+																												(p.percentage || 0)
+																											);
+																										}
+																										return acc;
+																									},
+																									0,
+																								);
+																							const remainingPercentage =
+																								100 - totalPercentage;
+																							field.handleChange(
+																								remainingPercentage,
+																							);
+																						}}
+																						variant="ghost"
+																						size="icon"
+																						className="group aspect-square rounded-full active:bg-primary/20"
+																					>
+																						<Sparkles className="h-4 w-4 text-foreground group-active:text-primary" />
+																					</Button>
 																					{field.state.meta.errors &&
 																					field.state.meta.errors.length > 0 ? (
 																						<Text className="text-destructive text-sm">
@@ -855,7 +892,7 @@ const CreateTransactionForm = () => {
 																	>
 																		{(field) => {
 																			return (
-																				<View className="flex-1">
+																				<View className="flex-1 flex-row items-center gap-2">
 																					<Input
 																						placeholder="Enter amount"
 																						className="flex-1"
@@ -866,6 +903,40 @@ const CreateTransactionForm = () => {
 																						}}
 																						clearButtonMode="while-editing"
 																					/>
+																					<Button
+																						onPress={() => {
+																							const totalAmount =
+																								form.getFieldValue("amount") ||
+																								0;
+																							const fixedAmounts =
+																								form.getFieldValue(
+																									"fixedAmounts",
+																								) || [];
+																							const totalFixed =
+																								fixedAmounts.reduce(
+																									(acc, f, index) => {
+																										if (index !== i) {
+																											return (
+																												acc + (f.amount || 0)
+																											);
+																										}
+																										return acc;
+																									},
+																									0,
+																								);
+																							const remainingAmount =
+																								Number(totalAmount) -
+																								totalFixed;
+																							field.handleChange(
+																								remainingAmount,
+																							);
+																						}}
+																						variant="ghost"
+																						size="icon"
+																						className="group aspect-square rounded-full active:bg-primary/20"
+																					>
+																						<Sparkles className="h-4 w-4 text-foreground group-active:text-primary" />
+																					</Button>
 																					{field.state.meta.errors &&
 																					field.state.meta.errors.length > 0 ? (
 																						<Text className="text-destructive text-sm">
