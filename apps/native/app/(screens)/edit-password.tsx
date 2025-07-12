@@ -1,8 +1,7 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "@tanstack/react-form";
 import { api } from "@hati-tayo/backend/convex/_generated/api";
-import { useMutation } // useQuery
-from "convex/react";
+import {
+	useMutation, // useQuery
+} from "convex/react";
 import { router } from "expo-router";
 import React from "react";
 import { View } from "react-native";
@@ -17,7 +16,9 @@ import { useAppForm } from "~/hooks/useAppForm"; // Assuming this hook can be ad
 const passwordSchema = z
 	.object({
 		currentPassword: z.string().min(1, "Current password cannot be empty"),
-		newPassword: z.string().min(8, "New password must be at least 8 characters"),
+		newPassword: z
+			.string()
+			.min(8, "New password must be at least 8 characters"),
 		confirmNewPassword: z.string(),
 	})
 	.refine((data) => data.newPassword === data.confirmNewPassword, {
@@ -35,25 +36,28 @@ export default function EditPasswordScreen() {
 			newPassword: "",
 			confirmNewPassword: "",
 		},
-		schema: passwordSchema,
+		validators: {
+			onSubmit: passwordSchema,
+		},
+		onSubmit: async ({ value }) => {
+			try {
+				await updatePasswordMutation({
+					currentPassword: value.currentPassword,
+					newPassword: value.newPassword,
+				});
+				// This part will likely not be reached if the mutation throws an error as expected.
+				// If it were to succeed (e.g. if auth provider was changed), then navigate back.
+				router.back();
+			} catch (error) {
+				if (error instanceof Error) {
+					console.error("Failed to update password:", error.message);
+					// Display an alert to the user
+					alert(`Password Update Failed: ${error.message}`);
+					// Optionally, you could clear the password fields here or log more detailed error info
+				}
+			}
+		},
 	});
-
-	const onSubmit = async (values: z.infer<typeof passwordSchema>) => {
-		try {
-			await updatePasswordMutation({
-				currentPassword: values.currentPassword,
-				newPassword: values.newPassword,
-			});
-			// This part will likely not be reached if the mutation throws an error as expected.
-			// If it were to succeed (e.g. if auth provider was changed), then navigate back.
-			router.back();
-		} catch (error: any) {
-			console.error("Failed to update password:", error.message);
-			// Display an alert to the user
-			alert(`Password Update Failed: ${error.message}`);
-			// Optionally, you could clear the password fields here or log more detailed error info
-		}
-	};
 
 	return (
 		<Container>
@@ -61,11 +65,12 @@ export default function EditPasswordScreen() {
 				Change Password
 			</Text>
 			<View className="gap-4">
-				<Field
-					name="currentPassword"
-					children={(field) => (
+				<Field name="currentPassword">
+					{(field) => (
 						<View className="gap-1.5">
-							<Label nativeID={`label-for-${field.name}`}>Current Password</Label>
+							<Label nativeID={`label-for-${field.name}`}>
+								Current Password
+							</Label>
 							<Input
 								placeholder="Enter your current password"
 								value={field.state.value}
@@ -74,18 +79,16 @@ export default function EditPasswordScreen() {
 								nativeID={`input-for-${field.name}`}
 								secureTextEntry
 							/>
-							<Subscribe
-								selector={(state) => state.fieldMeta.errorMap[field.name]}
-								children={(error) =>
-									error ? <Text className="text-sm text-destructive">{error}</Text> : null
-								}
-							/>
+							{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+								<Text className="text-destructive text-sm">
+									{field.state.meta.errors.map((error) => error).join(", ")}
+								</Text>
+							) : null}
 						</View>
 					)}
-				/>
-				<Field
-					name="newPassword"
-					children={(field) => (
+				</Field>
+				<Field name="newPassword">
+					{(field) => (
 						<View className="gap-1.5">
 							<Label nativeID={`label-for-${field.name}`}>New Password</Label>
 							<Input
@@ -96,20 +99,20 @@ export default function EditPasswordScreen() {
 								nativeID={`input-for-${field.name}`}
 								secureTextEntry
 							/>
-							<Subscribe
-								selector={(state) => state.fieldMeta.errorMap[field.name]}
-								children={(error) =>
-									error ? <Text className="text-sm text-destructive">{error}</Text> : null
-								}
-							/>
+							{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+								<Text className="text-destructive text-sm">
+									{field.state.meta.errors.map((error) => error).join(", ")}
+								</Text>
+							) : null}
 						</View>
 					)}
-				/>
-				<Field
-					name="confirmNewPassword"
-					children={(field) => (
+				</Field>
+				<Field name="confirmNewPassword">
+					{(field) => (
 						<View className="gap-1.5">
-							<Label nativeID={`label-for-${field.name}`}>Confirm New Password</Label>
+							<Label nativeID={`label-for-${field.name}`}>
+								Confirm New Password
+							</Label>
 							<Input
 								placeholder="Confirm your new password"
 								value={field.state.value}
@@ -118,16 +121,15 @@ export default function EditPasswordScreen() {
 								nativeID={`input-for-${field.name}`}
 								secureTextEntry
 							/>
-							<Subscribe
-								selector={(state) => state.fieldMeta.errorMap[field.name]}
-								children={(error) =>
-									error ? <Text className="text-sm text-destructive">{error}</Text> : null
-								}
-							/>
+							{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+								<Text className="text-destructive text-sm">
+									{field.state.meta.errors.map((error) => error).join(", ")}
+								</Text>
+							) : null}
 						</View>
 					)}
-				/>
-				<Button onPress={() => handleSubmit(onSubmit)()}>
+				</Field>
+				<Button onPress={() => handleSubmit()}>
 					<Text>Save Changes</Text>
 				</Button>
 			</View>

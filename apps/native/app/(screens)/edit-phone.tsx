@@ -1,10 +1,9 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "@tanstack/react-form";
 import { api } from "@hati-tayo/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
 import React from "react";
 import { View } from "react-native";
+import Toast from "react-native-toast-message";
 import { z } from "zod";
 import { Container } from "~/components/container";
 import { Button } from "~/components/ui/button";
@@ -21,28 +20,32 @@ export default function EditPhoneScreen() {
 	const user = useQuery(api.users.get);
 	const updatePhoneNumberMutation = useMutation(api.users.updatePhoneNumber);
 
-	const { Field, handleSubmit, Subscribe, reset } = useAppForm({
+	const { Field, handleSubmit } = useAppForm({
 		defaultValues: {
 			phoneNumber: user?.phoneNumber ?? "",
 		},
-		schema: phoneSchema,
+		validators: {
+			onSubmit: phoneSchema,
+		},
+		onSubmit: async ({ value }) => {
+			try {
+				await updatePhoneNumberMutation({ phoneNumber: value.phoneNumber });
+
+				Toast.show({
+					type: "success",
+					text1: "Phone number updated successfully",
+				});
+
+				router.back();
+			} catch (error) {
+				console.error("Failed to update phone number:", error);
+				Toast.show({
+					type: "error",
+					text1: "Failed to update phone number",
+				});
+			}
+		},
 	});
-
-	React.useEffect(() => {
-		if (user) {
-			reset({ phoneNumber: user.phoneNumber ?? "" });
-		}
-	}, [user, reset]);
-
-	const onSubmit = async (values: z.infer<typeof phoneSchema>) => {
-		try {
-			await updatePhoneNumberMutation({ phoneNumber: values.phoneNumber });
-			router.back();
-		} catch (error) {
-			console.error("Failed to update phone number:", error);
-			// TODO: Show user-friendly error message
-		}
-	};
 
 	return (
 		<Container>
@@ -50,9 +53,8 @@ export default function EditPhoneScreen() {
 				Edit Phone Number
 			</Text>
 			<View className="gap-4">
-				<Field
-					name="phoneNumber"
-					children={(field) => (
+				<Field name="phoneNumber">
+					{(field) => (
 						<View className="gap-1.5">
 							<Label nativeID={`label-for-${field.name}`}>Phone Number</Label>
 							<Input
@@ -63,16 +65,15 @@ export default function EditPhoneScreen() {
 								nativeID={`input-for-${field.name}`}
 								keyboardType="phone-pad"
 							/>
-							<Subscribe
-								selector={(state) => state.fieldMeta.errorMap[field.name]}
-								children={(error) =>
-									error ? <Text className="text-sm text-destructive">{error}</Text> : null
-								}
-							/>
+							{field.state.meta.errors && field.state.meta.errors.length > 0 ? (
+								<Text className="text-destructive text-sm">
+									{field.state.meta.errors.map((error) => error).join(", ")}
+								</Text>
+							) : null}
 						</View>
 					)}
-				/>
-				<Button onPress={() => handleSubmit(onSubmit)()}>
+				</Field>
+				<Button onPress={() => handleSubmit()}>
 					<Text>Save Changes</Text>
 				</Button>
 			</View>
