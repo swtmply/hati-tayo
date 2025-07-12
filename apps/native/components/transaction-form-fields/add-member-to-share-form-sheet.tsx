@@ -6,41 +6,21 @@ import BottomSheet, {
 	BottomSheetScrollView,
 	useBottomSheet,
 } from "@gorhom/bottom-sheet";
-import { formOptions, useStore } from "@tanstack/react-form";
+import { useStore } from "@tanstack/react-form";
 import * as React from "react";
 import { TouchableOpacity, View } from "react-native";
-import type { SplitMember } from "~/app/(screens)/create-transaction";
 import { Text } from "~/components/ui/text";
 import { withForm } from "~/hooks/useAppForm";
+import { createTransactionFormOpts } from "~/lib/form/schemas/transactions-schema";
 import { useColorScheme } from "~/lib/use-color-scheme";
 import { cn } from "~/lib/utils";
 import useSelectedShareFieldStore from "~/store/share-split";
-import { Avatar, AvatarImage } from "./ui/avatar";
-import { Button } from "./ui/button";
-import { CircleCheck } from "./ui/icons";
-
-const addMemberToShareFormOpts = formOptions({
-	defaultValues: {
-		groupName: "",
-		groupId: "",
-		transactionName: "",
-		amount: "",
-		members: [] as SplitMember[],
-		selectedMembers: [] as SplitMember[],
-		splitType: "EQUAL",
-		payer: "",
-		percentages: [] as { userId: string; percentage: number }[],
-		fixedAmounts: [] as { userId: string; amount: number }[],
-		items: [{ amount: 0, name: "", participantIds: [] }] as {
-			participantIds: string[];
-			name: string;
-			amount: number;
-		}[],
-	},
-});
+import { Avatar, AvatarImage } from "../ui/avatar";
+import { Button } from "../ui/button";
+import { CircleCheck } from "../ui/icons";
 
 const AddMemberToShareFormSheet = withForm({
-	...addMemberToShareFormOpts,
+	...createTransactionFormOpts,
 	render: ({ form }) => {
 		const bottomSheetRef = React.useRef<BottomSheet>(null);
 		const { colorScheme } = useColorScheme();
@@ -95,7 +75,9 @@ const AddMemberToShareFormSheet = withForm({
 			(state) => state.values.selectedMembers,
 		);
 
-		if (selectedShareField === null) {
+		const splitType = useStore(form.store, (state) => state.values.splitType);
+
+		if (selectedShareField === null || splitType !== "SHARED") {
 			return <></>;
 		}
 
