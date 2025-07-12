@@ -183,7 +183,10 @@ export const updatePhoneNumber = mutation({
 		if (!userId) {
 			throw new Error("User not authenticated");
 		}
-		await ctx.db.patch(userId, { phoneNumber: args.phoneNumber, updatedAt: Date.now() });
+		await ctx.db.patch(userId, {
+			phoneNumber: args.phoneNumber,
+			updatedAt: Date.now(),
+		});
 		return { success: true };
 	},
 });
