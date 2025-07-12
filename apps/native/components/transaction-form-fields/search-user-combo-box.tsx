@@ -4,12 +4,12 @@ import { useQuery } from "convex/react";
 import React from "react";
 import { Pressable, TouchableOpacity, View } from "react-native";
 import useContacts from "~/hooks/useContacts";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { CircleCheck } from "../ui/icons";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Text } from "../ui/text";
 import type { CreateUser } from "./add-member-form-sheet";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { CircleCheck } from "./ui/icons";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Text } from "./ui/text";
 
 interface SearchUserComboBoxProps {
 	selectedUsers: CreateUser[];

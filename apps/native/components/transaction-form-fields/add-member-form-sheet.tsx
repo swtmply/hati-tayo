@@ -11,9 +11,9 @@ import * as React from "react";
 import { View } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useColorScheme } from "~/lib/use-color-scheme";
+import { Button } from "../ui/button";
+import { Plus } from "../ui/icons";
 import SearchUserComboBox from "./search-user-combo-box";
-import { Button } from "./ui/button";
-import { Plus } from "./ui/icons";
 
 import {
 	Dialog,
@@ -25,98 +25,112 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "~/components/ui/dialog";
+import { withForm } from "~/hooks/useAppForm";
 import { useKeyboard } from "~/hooks/useKeyboard";
+import { createTransactionFormOpts } from "~/lib/form/schemas/transactions-schema";
 import { cn } from "~/lib/utils";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-
-interface AddMemberFormSheetProps {
-	index: number;
-	onClose: () => void;
-	onSubmit: (users: CreateUser[]) => void;
-}
+import useMemberIndexStore from "~/store/add-member";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 export type CreateUser = Omit<Doc<"users">, "_creationTime">;
 
-const AddMemberFormSheet = ({
-	index,
-	onClose,
-	onSubmit,
-}: AddMemberFormSheetProps) => {
-	const bottomSheetRef = React.useRef<BottomSheet>(null);
-	const [selectedUsers, setSelectedUsers] = React.useState<CreateUser[]>([]);
-	const { colorScheme } = useColorScheme();
+const AddMemberFormSheet = withForm({
+	...createTransactionFormOpts,
+	render: ({ form }) => {
+		const bottomSheetRef = React.useRef<BottomSheet>(null);
+		const [selectedUsers, setSelectedUsers] = React.useState<CreateUser[]>([]);
+		const { colorScheme } = useColorScheme();
 
-	const handleSheetChanges = (index: number) => {
-		if (index === -1) {
-			onClose();
-		}
-	};
+		const memberIndex = useMemberIndexStore((state) => state.memberIndex);
 
-	const backdropComponent = (props: BottomSheetBackdropProps) => (
-		<BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
-	);
+		const setMemberIndex = useMemberIndexStore((state) => state.setMemberIndex);
 
-	const FooterComponent = (props: BottomSheetFooterProps) => {
-		const { close } = useBottomSheet();
+		const handleSheetChanges = (index: number) => {
+			if (index === -1) {
+				setMemberIndex(-1);
+			}
+		};
 
-		return (
-			<BottomSheetFooter
+		const backdropComponent = (props: BottomSheetBackdropProps) => (
+			<BottomSheetBackdrop
 				{...props}
-				style={{
-					paddingHorizontal: 16,
-					paddingVertical: 32,
-				}}
-			>
-				<Button
-					onPress={() => {
-						onSubmit(selectedUsers);
+				disappearsOnIndex={-1}
+				appearsOnIndex={0}
+			/>
+		);
 
-						setSelectedUsers([]);
-						close();
+		const FooterComponent = (props: BottomSheetFooterProps) => {
+			const { close } = useBottomSheet();
+
+			return (
+				<BottomSheetFooter
+					{...props}
+					style={{
+						paddingHorizontal: 16,
+						paddingVertical: 32,
 					}}
 				>
-					<Text>Submit</Text>
-				</Button>
-			</BottomSheetFooter>
-		);
-	};
+					<Button
+						onPress={() => {
+							for (const user of selectedUsers) {
+								if (
+									form.state.values.members.some(
+										(member) => member._id === user._id,
+									)
+								) {
+									continue;
+								}
 
-	const snapPoints = ["75%", "95%"];
+								form.pushFieldValue("members", user);
+							}
 
-	return (
-		<BottomSheet
-			backdropComponent={backdropComponent}
-			ref={bottomSheetRef}
-			onChange={handleSheetChanges}
-			snapPoints={snapPoints}
-			enableDynamicSizing={false}
-			index={index}
-			footerComponent={FooterComponent}
-			handleClassName="bg-background rounded-t-2xl"
-			handleIndicatorStyle={{
-				backgroundColor: colorScheme === "dark" ? "#4caf50" : "#2e7d32",
-			}}
-			backgroundStyle={{
-				backgroundColor: colorScheme === "dark" ? "#1c2a1f" : "#f8f5f0",
-			}}
-		>
-			<BottomSheetScrollView className="h-full gap-4 bg-background p-4">
-				<View className="flex-row items-center justify-between">
-					<Text className="font-geist-semibold text-2xl">Add Members</Text>
-					<AddAnonymousMemberDialog
-						selectedUsers={selectedUsers}
+							setSelectedUsers([]);
+							close();
+						}}
+					>
+						<Text>Submit</Text>
+					</Button>
+				</BottomSheetFooter>
+			);
+		};
+
+		const snapPoints = ["75%", "95%"];
+
+		return (
+			<BottomSheet
+				backdropComponent={backdropComponent}
+				ref={bottomSheetRef}
+				onChange={handleSheetChanges}
+				snapPoints={snapPoints}
+				enableDynamicSizing={false}
+				index={memberIndex}
+				footerComponent={FooterComponent}
+				handleClassName="bg-background rounded-t-2xl"
+				handleIndicatorStyle={{
+					backgroundColor: colorScheme === "dark" ? "#4caf50" : "#2e7d32",
+				}}
+				backgroundStyle={{
+					backgroundColor: colorScheme === "dark" ? "#1c2a1f" : "#f8f5f0",
+				}}
+			>
+				<BottomSheetScrollView className="h-full gap-4 bg-background p-4">
+					<View className="flex-row items-center justify-between">
+						<Text className="font-geist-semibold text-2xl">Add Members</Text>
+						<AddAnonymousMemberDialog
+							selectedUsers={selectedUsers}
+							onUserSelect={setSelectedUsers}
+						/>
+					</View>
+					<SearchUserComboBox
 						onUserSelect={setSelectedUsers}
+						selectedUsers={selectedUsers}
 					/>
-				</View>
-				<SearchUserComboBox
-					onUserSelect={setSelectedUsers}
-					selectedUsers={selectedUsers}
-				/>
-			</BottomSheetScrollView>
-		</BottomSheet>
-	);
-};
+				</BottomSheetScrollView>
+			</BottomSheet>
+		);
+	},
+});
 
 interface AddAnonymousMemberDialogProps {
 	selectedUsers: CreateUser[];

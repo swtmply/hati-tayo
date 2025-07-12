@@ -257,7 +257,10 @@ export const createTransaction = mutation({
 		const user = userId !== null ? await ctx.db.get(userId) : null;
 
 		if (user === null) {
-			return null;
+			return {
+				ok: false,
+				message: "User not found.",
+			};
 		}
 
 		const participantsIds = [] as Id<"users">[];
@@ -266,265 +269,325 @@ export const createTransaction = mutation({
 		const fixedAmounts: { userId: Id<"users">; amount: number }[] = [];
 		const sharedAmounts: { userId: Id<"users">; amount: number }[] = [];
 
-		// Insert users if they are not in the database
-		for (const participant of args.data.participants) {
-			if (
-				participant._id.startsWith("anonymous-user-") ||
-				participant._id.startsWith("contact-")
-			) {
-				let id = "" as Id<"users">;
-				let existingUser = null;
+		try {
+			// Insert users if they are not in the database
+			for (const participant of args.data.participants) {
+				if (
+					participant._id.startsWith("anonymous-user-") ||
+					participant._id.startsWith("contact-")
+				) {
+					let id = "" as Id<"users">;
+					let existingUser = null;
 
-				if (participant.phoneNumber !== "") {
-					existingUser = await ctx.db
-						.query("users")
-						.withIndex("by_phoneNumber", (q) =>
-							q.eq(
-								"phoneNumber",
-								participant.phoneNumber?.startsWith("+")
-									? participant.phoneNumber.replace("+63", "0")
-									: participant.phoneNumber,
-							),
-						)
-						.unique();
-				}
-
-				if (existingUser !== null) {
-					// Check if user is already in the participantsIds array
-					if (participantsIds.includes(existingUser._id)) {
-						continue;
+					if (participant.phoneNumber !== "") {
+						existingUser = await ctx.db
+							.query("users")
+							.withIndex("by_phoneNumber", (q) =>
+								q.eq(
+									"phoneNumber",
+									participant.phoneNumber?.startsWith("+")
+										? participant.phoneNumber.replace("+63", "0")
+										: participant.phoneNumber,
+								),
+							)
+							.unique();
 					}
 
-					id = existingUser._id;
+					if (existingUser !== null) {
+						// Check if user is already in the participantsIds array
+						if (participantsIds.includes(existingUser._id)) {
+							continue;
+						}
+
+						id = existingUser._id;
+					} else {
+						id = await ctx.db.insert("users", {
+							name: participant.name,
+							email: participant.email,
+							image: generateImage(),
+							phoneNumber: participant.phoneNumber?.startsWith("+")
+								? participant.phoneNumber.replace("+63", "0")
+								: participant.phoneNumber,
+							createdAt: Date.now(),
+							updatedAt: Date.now(),
+						});
+					}
+
+					if (args.data.payerId === participant._id) {
+						payerId = id;
+					}
+
+					if (args.data.splitType === "PERCENTAGE") {
+						const percentage = args.data.percentages.find(
+							(p) => p.userId === participant._id,
+						);
+						percentages.push({
+							userId: id,
+							percentage: percentage?.percentage ?? 0,
+						});
+					}
+
+					if (args.data.splitType === "FIXED") {
+						const fixedAmount = args.data.fixedAmounts.find(
+							(p) => p.userId === participant._id,
+						);
+						fixedAmounts.push({
+							userId: id,
+							amount: fixedAmount?.amount ?? 0,
+						});
+					}
+
+					if (args.data.splitType === "SHARED") {
+						const sharedAmount = args.data.sharedAmounts.find(
+							(p) => p.userId === participant._id,
+						);
+						sharedAmounts.push({
+							userId: id,
+							amount: sharedAmount?.amount ?? 0,
+						});
+					}
+
+					participantsIds.push(id);
 				} else {
-					id = await ctx.db.insert("users", {
-						name: participant.name,
-						email: participant.email,
-						image: `https://ui-avatars.com/api/?background=random&name=${participant.name.replace(" ", "+")}`,
-						phoneNumber: participant.phoneNumber?.startsWith("+")
-							? participant.phoneNumber.replace("+63", "0")
-							: participant.phoneNumber,
+					if (args.data.payerId === participant._id) {
+						payerId = participant._id as Id<"users">;
+					}
+
+					if (args.data.splitType === "PERCENTAGE") {
+						const percentage = args.data.percentages.find(
+							(p) => p.userId === participant._id,
+						);
+						percentages.push({
+							userId: participant._id as Id<"users">,
+							percentage: percentage?.percentage ?? 0,
+						});
+					}
+
+					if (args.data.splitType === "FIXED") {
+						const fixedAmount = args.data.fixedAmounts.find(
+							(p) => p.userId === participant._id,
+						);
+						fixedAmounts.push({
+							userId: participant._id as Id<"users">,
+							amount: fixedAmount?.amount ?? 0,
+						});
+					}
+
+					if (args.data.splitType === "SHARED") {
+						const sharedAmount = args.data.sharedAmounts.find(
+							(p) => p.userId === participant._id,
+						);
+						sharedAmounts.push({
+							userId: participant._id as Id<"users">,
+							amount: sharedAmount?.amount ?? 0,
+						});
+					}
+
+					participantsIds.push(participant._id as Id<"users">);
+				}
+			}
+
+			if (args.data.groupId === undefined) {
+				// Create group if it doesn't exist
+				if (args.data.groupName === undefined) {
+					return null;
+				}
+
+				if (args.data.groupName === "") {
+					return null;
+				}
+
+				// Create group
+				const groupId = await ctx.db.insert("groups", {
+					name: args.data.groupName,
+					members: participantsIds,
+					transactions: [],
+					createdAt: Date.now(),
+					updatedAt: Date.now(),
+				});
+
+				args.data.groupId = groupId;
+			}
+
+			let transactionId: Id<"transactions">;
+
+			// Create transaction for different split types
+			if (args.data.splitType === "EQUAL") {
+				transactionId = await ctx.db.insert("transactions", {
+					name: args.data.name,
+					groupId: args.data.groupId,
+					participants: participantsIds,
+					amount: args.data.amount,
+					splitType: args.data.splitType,
+					payerId,
+					date: Date.now(),
+				});
+
+				for (const participantId of participantsIds) {
+					await ctx.db.insert("transactionShares", {
+						transactionId,
+						userId: participantId,
+						status: participantId === payerId ? "PAID" : "PENDING",
+						amount: args.data.amount / participantsIds.length,
 						createdAt: Date.now(),
 						updatedAt: Date.now(),
 					});
 				}
-
-				if (args.data.payerId === participant._id) {
-					payerId = id;
-				}
-
-				if (args.data.splitType === "PERCENTAGE") {
-					const percentage = args.data.percentages.find(
-						(p) => p.userId === participant._id,
-					);
-					percentages.push({
-						userId: id,
-						percentage: percentage?.percentage ?? 0,
-					});
-				}
-
-				if (args.data.splitType === "FIXED") {
-					const fixedAmount = args.data.fixedAmounts.find(
-						(p) => p.userId === participant._id,
-					);
-					fixedAmounts.push({
-						userId: id,
-						amount: fixedAmount?.amount ?? 0,
-					});
-				}
-
-				if (args.data.splitType === "SHARED") {
-					const sharedAmount = args.data.sharedAmounts.find(
-						(p) => p.userId === participant._id,
-					);
-					sharedAmounts.push({
-						userId: id,
-						amount: sharedAmount?.amount ?? 0,
-					});
-				}
-
-				participantsIds.push(id);
-			} else {
-				if (args.data.payerId === participant._id) {
-					payerId = participant._id as Id<"users">;
-				}
-
-				if (args.data.splitType === "PERCENTAGE") {
-					const percentage = args.data.percentages.find(
-						(p) => p.userId === participant._id,
-					);
-					percentages.push({
-						userId: participant._id as Id<"users">,
-						percentage: percentage?.percentage ?? 0,
-					});
-				}
-
-				if (args.data.splitType === "FIXED") {
-					const fixedAmount = args.data.fixedAmounts.find(
-						(p) => p.userId === participant._id,
-					);
-					fixedAmounts.push({
-						userId: participant._id as Id<"users">,
-						amount: fixedAmount?.amount ?? 0,
-					});
-				}
-
-				if (args.data.splitType === "SHARED") {
-					const sharedAmount = args.data.sharedAmounts.find(
-						(p) => p.userId === participant._id,
-					);
-					sharedAmounts.push({
-						userId: participant._id as Id<"users">,
-						amount: sharedAmount?.amount ?? 0,
-					});
-				}
-
-				participantsIds.push(participant._id as Id<"users">);
-			}
-		}
-
-		if (args.data.groupId === undefined) {
-			// Create group if it doesn't exist
-			if (args.data.groupName === undefined) {
-				return null;
 			}
 
-			if (args.data.groupName === "") {
-				return null;
-			}
-
-			// Create group
-			const groupId = await ctx.db.insert("groups", {
-				name: args.data.groupName,
-				members: participantsIds,
-				transactions: [],
-				createdAt: Date.now(),
-				updatedAt: Date.now(),
-			});
-
-			args.data.groupId = groupId;
-		}
-
-		let transactionId: Id<"transactions">;
-
-		// Create transaction for different split types
-		if (args.data.splitType === "EQUAL") {
-			transactionId = await ctx.db.insert("transactions", {
-				name: args.data.name,
-				groupId: args.data.groupId,
-				participants: participantsIds,
-				amount: args.data.amount,
-				splitType: args.data.splitType,
-				payerId,
-				date: Date.now(),
-			});
-
-			for (const participantId of participantsIds) {
-				await ctx.db.insert("transactionShares", {
-					transactionId,
-					userId: participantId,
-					status: participantId === payerId ? "PAID" : "PENDING",
-					amount: args.data.amount / participantsIds.length,
-					createdAt: Date.now(),
-					updatedAt: Date.now(),
+			if (args.data.splitType === "PERCENTAGE") {
+				transactionId = await ctx.db.insert("transactions", {
+					name: args.data.name,
+					groupId: args.data.groupId,
+					participants: participantsIds,
+					amount: args.data.amount,
+					splitType: args.data.splitType,
+					date: Date.now(),
+					percentages,
+					payerId,
 				});
-			}
-		}
 
-		if (args.data.splitType === "PERCENTAGE") {
-			transactionId = await ctx.db.insert("transactions", {
-				name: args.data.name,
-				groupId: args.data.groupId,
-				participants: participantsIds,
-				amount: args.data.amount,
-				splitType: args.data.splitType,
-				date: Date.now(),
-				percentages,
-				payerId,
-			});
+				for (const participantId of participantsIds) {
+					const share = percentages.find((p) => p.userId === participantId);
 
-			for (const participantId of participantsIds) {
-				const share = percentages.find((p) => p.userId === participantId);
+					if (share === undefined) {
+						continue;
+					}
 
-				if (share === undefined) {
-					continue;
+					await ctx.db.insert("transactionShares", {
+						transactionId,
+						userId: participantId,
+						status: share.userId === payerId ? "PAID" : "PENDING",
+						amount: (share.percentage / 100) * args.data.amount,
+						createdAt: Date.now(),
+						updatedAt: Date.now(),
+					});
 				}
-
-				await ctx.db.insert("transactionShares", {
-					transactionId,
-					userId: participantId,
-					status: share.userId === payerId ? "PAID" : "PENDING",
-					amount: (share.percentage / 100) * args.data.amount,
-					createdAt: Date.now(),
-					updatedAt: Date.now(),
-				});
 			}
-		}
 
-		if (args.data.splitType === "FIXED") {
-			transactionId = await ctx.db.insert("transactions", {
-				name: args.data.name,
-				groupId: args.data.groupId,
-				participants: participantsIds,
-				amount: args.data.amount,
-				splitType: args.data.splitType,
-				date: Date.now(),
-				fixedAmounts,
-				payerId,
-			});
+			if (args.data.splitType === "FIXED") {
+				transactionId = await ctx.db.insert("transactions", {
+					name: args.data.name,
+					groupId: args.data.groupId,
+					participants: participantsIds,
+					amount: args.data.amount,
+					splitType: args.data.splitType,
+					date: Date.now(),
+					fixedAmounts,
+					payerId,
+				});
 
-			for (const participantId of participantsIds) {
-				const share = fixedAmounts.find((p) => p.userId === participantId);
+				for (const participantId of participantsIds) {
+					const share = fixedAmounts.find((p) => p.userId === participantId);
 
-				if (share === undefined) {
-					continue;
+					if (share === undefined) {
+						continue;
+					}
+
+					await ctx.db.insert("transactionShares", {
+						transactionId,
+						userId: participantId,
+						status: share.userId === payerId ? "PAID" : "PENDING",
+						amount: share.amount,
+						createdAt: Date.now(),
+						updatedAt: Date.now(),
+					});
 				}
-
-				await ctx.db.insert("transactionShares", {
-					transactionId,
-					userId: participantId,
-					status: share.userId === payerId ? "PAID" : "PENDING",
-					amount: share.amount,
-					createdAt: Date.now(),
-					updatedAt: Date.now(),
-				});
 			}
-		}
 
-		if (args.data.splitType === "SHARED") {
-			transactionId = await ctx.db.insert("transactions", {
-				name: args.data.name,
-				groupId: args.data.groupId,
-				participants: participantsIds,
-				amount: args.data.amount,
-				splitType: args.data.splitType,
-				date: Date.now(),
-				items: args.data.items.map((item) => ({
-					...item,
-					participantIds: item.participantIds.map((id) => id as Id<"users">),
-				})),
-				sharedAmounts,
-				payerId,
-			});
+			if (args.data.splitType === "SHARED") {
+				transactionId = await ctx.db.insert("transactions", {
+					name: args.data.name,
+					groupId: args.data.groupId,
+					participants: participantsIds,
+					amount: args.data.amount,
+					splitType: args.data.splitType,
+					date: Date.now(),
+					items: args.data.items.map((item) => ({
+						...item,
+						participantIds: item.participantIds.map((id) => id as Id<"users">),
+					})),
+					sharedAmounts,
+					payerId,
+				});
 
-			for (const participantId of participantsIds) {
-				const share = sharedAmounts.find((p) => p.userId === participantId);
+				for (const participantId of participantsIds) {
+					const share = sharedAmounts.find((p) => p.userId === participantId);
 
-				if (share === undefined) {
-					continue;
+					if (share === undefined) {
+						continue;
+					}
+
+					await ctx.db.insert("transactionShares", {
+						transactionId,
+						userId: participantId,
+						status: share.userId === payerId ? "PAID" : "PENDING",
+						amount: share.amount,
+						createdAt: Date.now(),
+						updatedAt: Date.now(),
+					});
 				}
-
-				await ctx.db.insert("transactionShares", {
-					transactionId,
-					userId: participantId,
-					status: share.userId === payerId ? "PAID" : "PENDING",
-					amount: share.amount,
-					createdAt: Date.now(),
-					updatedAt: Date.now(),
-				});
 			}
-		}
 
-		return args;
+			return {
+				ok: true,
+				message: "Transaction created successfully.",
+			};
+		} catch (error) {
+			return {
+				ok: false,
+				message: "Failed to create transaction.",
+			};
+		}
 	},
 });
+
+function generateImage() {
+	const maxPartCounts = {
+		accessory: 18,
+		eye: 6,
+		face: 8,
+		hair: 32,
+		mouth: 10,
+		outfit: 25,
+	};
+
+	const randomAccessory = Math.floor(Math.random() * maxPartCounts.accessory);
+	const randomEye = Math.floor(Math.random() * maxPartCounts.eye);
+	const randomFace = Math.floor(Math.random() * maxPartCounts.face);
+	const randomHair = Math.floor(Math.random() * maxPartCounts.hair);
+	const randomMouth = Math.floor(Math.random() * maxPartCounts.mouth);
+	const randomOutfit = Math.floor(Math.random() * maxPartCounts.outfit);
+
+	const randomAccessoryFormatted = Intl.NumberFormat("en-US", {
+		minimumIntegerDigits: 2,
+		useGrouping: false,
+	}).format(randomAccessory);
+
+	const randomEyeFormatted = Intl.NumberFormat("en-US", {
+		minimumIntegerDigits: 2,
+		useGrouping: false,
+	}).format(randomEye);
+
+	const randomFaceFormatted = Intl.NumberFormat("en-US", {
+		minimumIntegerDigits: 2,
+		useGrouping: false,
+	}).format(randomFace);
+
+	const randomHairFormatted = Intl.NumberFormat("en-US", {
+		minimumIntegerDigits: 2,
+		useGrouping: false,
+	}).format(randomHair);
+
+	const randomMouthFormatted = Intl.NumberFormat("en-US", {
+		minimumIntegerDigits: 2,
+		useGrouping: false,
+	}).format(randomMouth);
+
+	const randomOutfitFormatted = Intl.NumberFormat("en-US", {
+		minimumIntegerDigits: 2,
+		useGrouping: false,
+	}).format(randomOutfit);
+
+	return `https://avartation-api.vercel.app/api?hair=${randomHairFormatted}&bg=rgb(56,%20141,%2061)&eyes=${randomEyeFormatted}&mouth=${randomMouthFormatted}&head=${randomFaceFormatted}&outfit=${randomOutfitFormatted}&accessory=${randomAccessoryFormatted}`;
+}

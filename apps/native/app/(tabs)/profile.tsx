@@ -17,7 +17,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "~/components/ui/dialog";
-import { ChevronRight } from "~/components/ui/icons";
 import { Text } from "~/components/ui/text";
 
 const ProfilePage = () => {
@@ -76,33 +75,39 @@ const ProfilePage = () => {
 			</Text>
 
 			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar dark:bg-secondary">
-				<View className="flex-row items-center justify-between border-border border-b px-4 py-2 dark:border-popover">
+				<Pressable
+					// onPress={() => router.push("/(screens)/edit-name")}
+					className="flex-row items-center justify-between border-border border-b px-4 py-2 active:opacity-50 dark:border-popover"
+				>
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Name
 					</Text>
 					<View className="flex-row items-center gap-2">
 						<Text className=" text-muted-foreground">{user?.name}</Text>
-						<ChevronRight className="text-muted-foreground" />
 					</View>
-				</View>
-				<View className="flex-row items-center justify-between border-border border-b px-4 py-2 dark:border-popover">
+				</Pressable>
+				<Pressable
+					// onPress={() => router.push("/(screens)/edit-email")}
+					className="flex-row items-center justify-between border-border border-b px-4 py-2 active:opacity-50 dark:border-popover"
+				>
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Email
 					</Text>
 					<View className="flex-row items-center gap-2">
 						<Text className=" text-muted-foreground">{user?.email}</Text>
-						<ChevronRight className="text-muted-foreground" />
 					</View>
-				</View>
-				<View className="flex-row items-center justify-between border-border px-4 py-2">
+				</Pressable>
+				<Pressable
+					// onPress={() => router.push("/(screens)/edit-phone")}
+					className="flex-row items-center justify-between border-border px-4 py-2 active:opacity-50"
+				>
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Phone Number
 					</Text>
 					<View className="flex-row items-center gap-2">
 						<Text className=" text-muted-foreground">{user?.phoneNumber}</Text>
-						<ChevronRight className="text-muted-foreground" />
 					</View>
-				</View>
+				</Pressable>
 			</View>
 
 			<Text className="py-2 font-geist-semibold text-muted-foreground text-sm uppercase">
@@ -110,15 +115,17 @@ const ProfilePage = () => {
 			</Text>
 
 			<View className="gap-0.5 rounded-lg border border-sidebar-border bg-sidebar dark:bg-secondary">
-				<View className="flex-row items-center justify-between border-border px-4 py-2">
+				<Pressable
+					// onPress={() => router.push("/(screens)/edit-password")}
+					className="flex-row items-center justify-between border-border px-4 py-2 active:opacity-50"
+				>
 					<Text className="font-geist-medium text-card-foreground text-lg">
 						Password
 					</Text>
 					<View className="flex-row items-center gap-2">
 						<Text className="text-muted-foreground">********</Text>
-						<ChevronRight className="text-muted-foreground" />
 					</View>
-				</View>
+				</Pressable>
 			</View>
 
 			<Text className="py-2 font-geist-semibold text-destructive text-sm uppercase">

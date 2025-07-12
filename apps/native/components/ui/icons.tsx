@@ -9,6 +9,7 @@ import {
 	CircleCheck,
 	Plus,
 	Rainbow,
+	Sparkles,
 	Trash,
 	X,
 } from "lucide-react-native";
@@ -37,6 +38,7 @@ iconWithClassName(Plus);
 iconWithClassName(ChevronLeft);
 iconWithClassName(ChevronRight);
 iconWithClassName(Trash);
+iconWithClassName(Sparkles);
 
 export {
 	Bell,
@@ -48,6 +50,7 @@ export {
 	CircleCheck,
 	Plus,
 	Rainbow,
+	Sparkles,
 	Trash,
 	X,
 };

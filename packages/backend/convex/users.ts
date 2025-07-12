@@ -137,3 +137,71 @@ export const get = query({
 		return userId !== null ? ctx.db.get(userId) : null;
 	},
 });
+
+export const updateName = mutation({
+	args: { name: v.string() },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error("User not authenticated");
+		}
+		await ctx.db.patch(userId, { name: args.name, updatedAt: Date.now() });
+		return { success: true };
+	},
+});
+
+export const updateEmail = mutation({
+	args: { email: v.string() },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error("User not authenticated");
+		}
+		// Check if email is already in use by another user
+		const existingUser = await ctx.db
+			.query("users")
+			.withIndex("by_email", (q) => q.eq("email", args.email))
+			.filter((q) => q.neq(q.field("_id"), userId)) // Exclude current user
+			.unique();
+
+		if (existingUser) {
+			throw new Error("Email is already in use.");
+		}
+
+		await ctx.db.patch(userId, { email: args.email, updatedAt: Date.now() });
+		// Note: If email is used for login, additional steps might be needed
+		// with the auth provider (e.g., updating email in Auth0/Clerk and Convex's auth tables)
+		// This will be handled in step 7 if necessary.
+		return { success: true };
+	},
+});
+
+export const updatePhoneNumber = mutation({
+	args: { phoneNumber: v.string() },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error("User not authenticated");
+		}
+		await ctx.db.patch(userId, { phoneNumber: args.phoneNumber, updatedAt: Date.now() });
+		return { success: true };
+	},
+});
+
+// Placeholder for password update.
+// Actual implementation will depend on the auth provider and will be detailed in Step 7.
+export const updatePassword = mutation({
+	args: { currentPassword: v.string(), newPassword: v.string() },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error("User not authenticated");
+		}
+
+		// The default "convex" auth provider does not support password changes.
+		// A more advanced provider like Clerk or Auth0 would be needed for this functionality.
+		throw new Error(
+			"Password updates are not supported with the current authentication setup.",
+		);
+	},
+});

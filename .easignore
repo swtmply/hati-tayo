@@ -1,0 +1,9 @@
+node_modules
+
+apps/native/.expo
+apps/native/.cache
+apps/native/android
+apps/native/ios
+apps/native/hati-tayo-464006-23472c951dd6.json
+
+apps/web

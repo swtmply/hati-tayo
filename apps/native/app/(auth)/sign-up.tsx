@@ -11,7 +11,7 @@ import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { useAppForm } from "~/hooks/useAppForm";
 import { useKeyboard } from "~/hooks/useKeyboard";
-import { cn } from "~/lib/utils";
+import { cn, generateImage } from "~/lib/utils";
 
 const SignUpPage = () => {
 	const { signIn } = useAuthActions();
@@ -38,13 +38,14 @@ const SignUpPage = () => {
 		},
 		onSubmit: async ({ value }) => {
 			// Start sign-up process using email and password provided
+
 			try {
 				await signIn("password", {
 					name: value.name,
 					email: value.email,
 					password: value.password,
 					phoneNumber: value.phoneNumber,
-					image: `https://ui-avatars.com/api/?background=random&name=${value.name.replace(" ", "+")}`,
+					image: generateImage(),
 					redirectTo: "/(tabs)",
 					flow: "signUp",
 				});

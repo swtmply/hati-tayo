@@ -18,7 +18,7 @@
 	"submit": {
 		"production": {
 			"android": {
-				"serviceAccountKeyPath": "../hati-tayo-464006-23472c951dd6.json"
+				"serviceAccountKeyPath": "./hati-tayo-464006-23472c951dd6.json"
 			}
 		}
 	}
